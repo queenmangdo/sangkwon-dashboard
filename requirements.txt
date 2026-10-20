@@ -1,0 +1,9 @@
+streamlit>=1.42
+streamlit-folium>=0.22
+folium>=0.17
+pandas>=2.0
+numpy
+pyyaml
+openpyxl
+requests
+# prep/build_area.py 를 다시 돌릴 때만: geopandas

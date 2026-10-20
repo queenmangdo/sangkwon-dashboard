@@ -1,0 +1,27 @@
+# 앱 전역 설정 — 경로는 sangkwon_app 폴더 기준
+data:
+  metrics_table: data/final_restaurant_cluster_sl_m.csv    # 상권 지표 (상권 × 월 × 업종)
+  factor_table: "data/중분류별 요인 중요도 (음식점).xlsx"    # 업종별 요인 결과
+  area_table: data/area.csv                                 # 상권 단위 표 (prep/build_area.py)
+  area_shapes: data/area_shapes.geojson                     # 상권 경계
+
+period_months: 12          # 비교 기간: 데이터 마지막 달부터 거꾸로 n개월
+baseline_min_stores: 3     # '서울 보통'에 넣을 상권: 같은 업종 가게가 최근 달 n곳 이상
+sample_min_stores: 3       # 상권의 같은 업종 가게가 n곳 미만이면 하이라이트 요약을 만들지 않음
+highlight_T: 5             # 가장 유리·불리 표시 기준 (매출 %p 환산 차이)
+judge_gap_pp: 2            # 생존율 등 '유리/보통/아쉬움' 태그 기준 (%p)
+grid_area_km2: 0.0625      # 격자 1칸 넓이 (250m × 250m)
+max_slots: 3
+
+total_label: 전체          # 중분류 드롭다운의 '전체' 값
+total_fallback: none       # 데이터에 '전체' 행이 없을 때: none = 비워둠 / aggregate = 중분류를 합쳐서 계산
+default_major: 음식점      # 상권 지표에 대분류 컬럼이 없을 때 쓰는 값
+default_middle: 한식
+
+llm_placeholder: LLM 한줄 해석 연결 예정
+
+# 상권 상세 — 트렌드 비교
+trend:
+  recent_months: 3        # '최근 n개월'
+  chart_months: 12        # 추이 그래프 기간
+  yoy_min_months: 15      # 데이터가 이 개월 수 이상이면 '최근 n개월 vs 전년 동기'로 자동 전환 (지금은 12개월 → '최근 n개월 vs 최근 1년')

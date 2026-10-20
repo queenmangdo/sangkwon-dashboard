@@ -1,0 +1,10 @@
+# 가상환경·캐시
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# 상권 이름 다시 만들 때만 쓰는 대용량 파일 (앱 실행에는 불필요, prep/build_area.py 가 자동으로 다시 받음)
+data/admdong_seoul.geojson
+data/roads_seoul.geojson
+data/roads_tiles/

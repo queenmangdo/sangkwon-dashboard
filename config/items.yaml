@@ -1,0 +1,53 @@
+# 상권 비교 표의 행 정의. 순서대로 그려진다. 행을 빼거나 순서를 바꾸려면 여기만 고친다.
+# type: highlight | value_bar | store_counts | density_bar | pct_judge | hours | customer_heatmap | money_area | tags
+# metric: metrics.yaml 의 이름. 해당 컬럼이 데이터에 없으면 '데이터 확보 시' 칸으로 자동 표시.
+# {업종} 은 고른 중분류(전체면 대분류) 이름으로 바뀐다.
+
+sections:
+  - title: 매출
+    rows:
+      - {type: highlight, label: 매출 요인 하이라이트}
+      - {type: value_bar, metric: sales_per_store, label: 가게당 월매출, sub: "최근 1년 · 가게 평균", scale: 10000, unit: 만 원, best_tag: 가장 높음, show_vs_base: true}
+
+  - title: 경쟁 환경 (공급)
+    rows:
+      - {type: store_counts, metric: stores_latest, label: 동종업계 가게 수, sub: "최근 달 기준"}
+      - {type: density_bar, metric: stores_latest, label: 동종업계 밀집도, sub: "1㎢당 가게 수", best_tag: 가장 빽빽함}
+      - {type: pct_judge, metric: survival_1y_pct, label: 신규 매장 1년 생존율, sub: 새로 연 가게}
+
+  - title: 고객 (카드 결제 기준)
+    rows:
+      - type: hours
+        label: 매출 몰리는 시간대 · 요일
+        sub: 카드 결제 기준
+        bands:
+          - {metric: hour_0510_pct, name: 아침, range: 05~10시}
+          - {metric: hour_1114_pct, name: 점심, range: 11~14시}
+          - {metric: hour_1517_pct, name: 오후, range: 15~17시}
+          - {metric: hour_1821_pct, name: 저녁, range: 18~21시}
+          - {metric: hour_2204_pct, name: 심야, range: 22~04시}
+        weekend: weekend_pct
+      - type: customer_heatmap
+        label: 주요 고객층
+        sub: "성별 × 나이<br>카드 결제 기준"
+        show_rank: false   # true 면 상위 top_k 칸에 순위 숫자·테두리 표시
+        top_k: 3
+        cols: [20·30대, 40대, 50·60대]
+        rows:
+          여성: [female_2030_pct, female_40_pct, female_5060_pct]
+          남성: [male_2030_pct, male_40_pct, male_5060_pct]
+
+  - title: 비용
+    rows:
+      - {type: money_area, metric: rent_per_m2, label: 평균 임대료, sub: "1층 · ㎡당 월", scale: 10000, unit: 만 원}
+
+  - title: 기타
+    rows:
+      - {type: tags, metric: sns_hashtags, label: "SNS 트렌드 #", sub: 최근 1년 해시태그, max: 3}
+
+footnotes:
+  - 카드 결제 기반 추정치예요. 현금 비중이 높은 가게는 실제보다 적게 잡힐 수 있어요.
+  - "'가장 유리 · 가장 불리'는 요인과 매출의 관계에 비춰, 고른 상권끼리 비교한 결과예요. 다른 곳과 차이가 {T}%p 미만이면 표시하지 않아요."
+  - 매출 요인은 모델이 찾은 관계예요. 이렇게 바꾸면 매출이 오른다는 뜻은 아니에요.
+  - 고객 항목은 카드 결제 고객 기준이에요. 상권을 지나다니는 사람 전체와는 달라요.
+  - 생존율·임대료·SNS는 데이터를 확보하면 채워져요.

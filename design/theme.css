@@ -1,0 +1,152 @@
+/* 상권 리포트 테마 — design/STYLE.md 의 값을 그대로 옮김 */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+:root {
+  --indigo: #2D2A84; --indigo-deep: #1F1C5E; --indigo-text: #3B37A8;
+  --lavender: #E8E7F6; --lavender-bg: #F6F6FC; --panel-bg: #FAFAFE;
+  --line: #E3E3EE; --text: #1D1D2B; --muted: #7A7A8C; --bar-base: #B9B9C8;
+  --good: #17643A; --good-bg: #E3F3E8; --bad: #B8481B; --bad-bg: #FDE7DC;
+  --neutral: #555B66; --neutral-bg: #EEF0F2;
+  --yellow: #8A6D00; --yellow-bg: #FFF3C4; --yellow-strong: #FFD54A;
+  --gap: 16px;
+}
+html, body, [class*="st-"], .stApp { font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif; }
+.stApp { background: #FFFFFF; color: var(--text); }
+.block-container { max-width: 1360px; padding-top: 2.2rem; }
+header[data-testid="stHeader"] { background: transparent; }
+
+/* ---------- 상단 바 */
+.sk-title { font-size: 18px; font-weight: 800; color: var(--text); }
+.sk-badge { background: var(--yellow-bg); color: var(--yellow); font-size: 11px; font-weight: 700;
+            padding: 3px 8px; border-radius: 4px; margin-left: 10px; vertical-align: 2px; }
+.sk-inline-label { font-size: 12px; color: var(--muted); text-align: right; padding-top: 8px; }
+
+/* ---------- 탭 */
+.st-key-tab_compare button, .st-key-tab_detail button {
+  border-radius: 6px 6px 0 0; border: 1px solid transparent; border-bottom: none; background: transparent;
+  color: var(--muted); font-weight: 600; box-shadow: none; }
+.st-key-tab_compare button[kind="primary"], .st-key-tab_detail button[kind="primary"] {
+  background: #fff; color: var(--text); font-weight: 800; border: 1px solid var(--line); border-bottom: 1px solid #fff; }
+.st-key-tab_compare button:hover, .st-key-tab_detail button:hover { color: var(--indigo); }
+
+/* ---------- 제목 */
+.sk-h2 { font-size: 20px; font-weight: 800; margin: 6px 0 2px; }
+.sk-cap { color: var(--muted); font-size: 12px; }
+
+/* ---------- 5가지 요인 상자 */
+.sk-fbox { background: var(--panel-bg); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin: 14px 0 18px; }
+.sk-fbox h3 { font-size: 16px; font-weight: 800; margin: 0 0 4px; }
+.sk-chip { background: var(--indigo); color: #fff; border-radius: 4px; padding: 1px 8px; margin: 0 2px; }
+.sk-fgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 12px; }
+.sk-fcard { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 12px 13px; font-size: 12px; line-height: 1.5; }
+.sk-fcard .n { display: inline-flex; width: 20px; height: 20px; border-radius: 50%; background: var(--indigo); color: #fff;
+               align-items: center; justify-content: center; font-weight: 700; font-size: 11px; }
+.sk-fcard .t { font-weight: 800; font-size: 14px; margin: 8px 0 6px; }
+.sk-fcard .k { color: var(--indigo-text); font-weight: 700; margin-top: 8px; font-size: 11px; }
+.sk-fcard .na { color: var(--muted); font-weight: 600; }
+.sk-fnote { color: var(--muted); font-size: 11px; margin-top: 10px; }
+.sk-empty-box { color: var(--muted); font-size: 13px; padding: 18px 4px; }
+
+/* ---------- 비교 표 격자 */
+.sk-grid { display: grid; grid-template-columns: 1.15fr 2fr 2fr 2fr; gap: var(--gap); margin-bottom: 10px; align-items: stretch; }
+.sk-head { background: var(--indigo); color: #fff; border-radius: 6px; text-align: center; padding: 9px; font-weight: 700; font-size: 14px; }
+.sk-head.off { background: #BDBCD8; }
+.sk-label { background: var(--indigo); color: #fff; border-radius: 6px; padding: 14px 10px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center; min-height: 72px; }
+.sk-label b { font-size: 14px; } .sk-label span { font-size: 11px; opacity: .75; margin-top: 4px; line-height: 1.4; }
+.sk-label.hl { background: linear-gradient(160deg, #3A36A0, var(--indigo-deep)); box-shadow: 0 4px 14px rgba(45,42,132,.25); }
+.sk-label .tag-key { background: var(--yellow-strong); color: #3A2E00; font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 3px; margin-bottom: 6px; }
+.sk-label .tag-wip { background: var(--yellow-bg); color: var(--yellow); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-top: 6px; opacity: 1; }
+.sk-cell { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 13px 15px; min-height: 72px; }
+.sk-cell.hl { border: 2px solid var(--indigo); background: var(--lavender-bg); }
+.sk-cell.empty { background: #FAFAFC; color: #B2B2C2; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+.sk-section { display: flex; align-items: center; gap: 10px; color: var(--indigo); font-weight: 800; font-size: 13px; margin: 18px 0 8px; }
+.sk-section:after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+
+/* ---------- 값 */
+.sk-big { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.2; }
+.sk-big small { font-size: 13px; font-weight: 600; }
+.sk-big.pos { color: var(--good); } .sk-big.neg { color: #C5221F; }
+.sk-sub b.sk-pos { color: var(--good); } .sk-sub b.sk-neg { color: #C5221F; }
+.sk-sub { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.sk-sub b { color: var(--text); }
+.sk-bar { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); margin-top: 6px; }
+.sk-bar i { display: block; height: 6px; border-radius: 3px; }
+.sk-tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-left: 6px; vertical-align: 3px; }
+.sk-tag.top { background: var(--lavender); color: var(--indigo); }
+.sk-tag.good { background: var(--good-bg); color: var(--good); }
+.sk-tag.bad { background: var(--bad-bg); color: var(--bad); }
+.sk-tag.mid { background: var(--neutral-bg); color: var(--neutral); }
+
+/* ---------- 하이라이트 */
+.sk-pill { display: inline-block; border-radius: 4px; font-size: 13px; font-weight: 700; padding: 5px 10px; margin: 0 0 7px; }
+.sk-pill.good { background: var(--good-bg); color: var(--good); }
+.sk-pill.bad { background: var(--bad-bg); color: var(--bad); }
+.sk-pill.none { background: var(--neutral-bg); color: var(--neutral); font-weight: 600; }
+.sk-hlsent { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 12px; font-weight: 700; font-size: 15px; line-height: 1.55; }
+.sk-hlsent b { color: var(--indigo-text); }
+.sk-llm { color: var(--muted); font-weight: 600; font-size: 13px; }
+.sk-judge { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
+
+/* ---------- 시간대 띠 · 히트맵 · 해시태그 */
+.sk-strip { display: flex; gap: 3px; margin-top: 10px; }
+.sk-strip div { flex: 1; height: 18px; border-radius: 3px; }
+.sk-strip-lab { display: flex; gap: 3px; font-size: 10px; color: var(--muted); margin-top: 3px; }
+.sk-strip-lab span { flex: 1; text-align: center; }
+.sk-heat { border-collapse: separate; border-spacing: 3px; width: 100%; font-size: 11px; margin-top: 6px; }
+.sk-heat td, .sk-heat th { text-align: center; padding: 6px 2px; border-radius: 4px; }
+.sk-heat th { color: var(--muted); font-weight: 600; }
+.sk-heat td.top { outline: 2px solid var(--indigo); outline-offset: -2px; font-weight: 800; }
+.sk-hash { display: inline-block; background: var(--lavender-bg); border: 1px solid var(--lavender); color: var(--indigo);
+           border-radius: 999px; font-size: 12px; padding: 3px 10px; margin: 2px 4px 2px 0; }
+
+/* ---------- 지도 칸 */
+.sk-mapcard { position: relative; }
+.st-key-slotbox_0, .st-key-slotbox_1, .st-key-slotbox_2 { border-radius: 6px; }
+.sk-add { height: 200px; display: flex; align-items: center; justify-content: center; }
+
+/* ---------- 각주 */
+.sk-foot { color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); margin-top: 26px; padding-top: 12px; }
+.sk-foot ul { margin: 0; padding-left: 18px; } .sk-foot li { font-size: 12px; color: var(--muted); margin: 2px 0; }
+.sk-warn { font-size: 12px; color: var(--yellow); background: var(--yellow-bg); border-radius: 4px; padding: 4px 8px; display: inline-block; margin-top: 8px; }
+
+/* ================================================================ 상권 상세 */
+.sk-crumb { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+.sk-dtitle { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1.3; margin-bottom: 4px; }
+.sk-dsec { display: flex; align-items: baseline; gap: 12px; font-size: 19px; font-weight: 800; margin: 26px 0 4px; scroll-margin-top: 80px; }
+.sk-dsec .no { color: var(--indigo); font-size: 19px; font-weight: 800; }
+.sk-dsub { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+.sk-headline { background: var(--lavender-bg); border: 1px solid var(--lavender); border-radius: 8px; padding: 12px 16px; margin: 8px 0 12px; font-size: 15px; font-weight: 700; }
+.sk-llm-tag { display: inline-block; background: var(--yellow-bg); color: var(--yellow); font-size: 10px; font-weight: 800; border-radius: 3px; padding: 1px 6px; margin-right: 8px; vertical-align: 2px; }
+.sk-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+.sk-kpi { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 14px; text-align: center; }
+.sk-kpi .t { font-size: 13px; font-weight: 700; } .sk-kpi .s { font-size: 12px; color: var(--muted); }
+.sk-kpi .v { font-size: 28px; font-weight: 800; margin: 4px 0; } .sk-kpi .v.pos { color: var(--good); } .sk-kpi .v.neg { color: var(--bad); }
+.sk-ctitle { font-size: 15px; font-weight: 800; display: flex; justify-content: space-between; align-items: baseline; }
+.sk-ctitle span { font-size: 11px; font-weight: 500; color: var(--muted); }
+.sk-dgrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sk-dcard { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; }
+.sk-dcard .eb { color: var(--indigo-text); font-size: 12px; font-weight: 700; }
+.sk-dcard .tt { font-size: 17px; font-weight: 800; margin-top: 4px; }
+.sk-trend { display: flex; align-items: baseline; gap: 8px; margin: 6px 0 10px; }
+.sk-trend .b { font-size: 26px; font-weight: 800; color: var(--text); }
+.sk-trend .ar { color: var(--muted); font-size: 20px; }
+.sk-trend .a { font-size: 26px; font-weight: 800; color: var(--indigo); }
+.sk-trend .d, .sk-dnote .d { background: var(--good-bg); color: var(--good); font-size: 12px; font-weight: 800; border-radius: 4px; padding: 2px 8px; }
+.sk-trend .d.neg, .sk-dnote .d.neg { background: var(--bad-bg); color: var(--bad); }
+.sk-tbar { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); margin: 6px 0; }
+.sk-tbar span { width: 64px; } .sk-tbar i { display: block; height: 14px; border-radius: 3px; } .sk-tbar em { font-style: normal; color: var(--text); font-weight: 700; }
+.sk-dnote { background: var(--panel-bg); border-radius: 6px; padding: 8px 10px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.sk-dnote b { color: var(--text); }
+.sk-kw { display: flex; gap: 10px; flex-wrap: wrap; }
+.sk-kw span { background: var(--lavender-bg); border: 1px solid var(--lavender); color: var(--indigo); font-weight: 700; border-radius: 8px; padding: 12px 18px; }
+.sk-dempty { background: #FAFAFC; border: 1px dashed var(--line); border-radius: 8px; color: #A0A0B2; font-size: 13px; text-align: center; padding: 22px; }
+.sk-acts { display: flex; flex-direction: column; gap: 10px; }
+.sk-act { display: grid; grid-template-columns: 44px 1fr auto auto; gap: 14px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; }
+.sk-act .n { width: 34px; height: 34px; border-radius: 50%; background: var(--indigo); color: #fff; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.sk-act .tt { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+.sk-act .ev { display: flex; gap: 12px; font-size: 12px; color: var(--text); line-height: 1.6; }
+.sk-act .ev > span { color: var(--muted); white-space: nowrap; }
+.sk-act .chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 300px; }
+.sk-act .chips em { font-style: normal; background: var(--lavender-bg); border: 1px solid var(--lavender); color: var(--indigo); font-size: 11px; border-radius: 999px; padding: 3px 9px; }
+.sk-act .more { color: var(--indigo); font-weight: 700; font-size: 13px; text-decoration: none; border-left: 1px solid var(--line); padding-left: 14px; white-space: nowrap; }

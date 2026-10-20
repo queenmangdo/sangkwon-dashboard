@@ -1,0 +1,65 @@
+# 상권 상세 페이지 문구·구성. {상권} {업종} {을를} {최근} {기준} 은 자동으로 바뀐다.
+#   {최근} = 최근 3개월 / {기준} = 최근 1년 (데이터가 2년 이상이면 '전년 동기'로 자동 전환)
+
+title: "{상권}에서 {업종}{을를} 준비한다면"
+subtitle: 상권의 변화를 살펴보고, 창업 준비의 우선순위를 정해요.
+small_sample: "이 상권은 {업종} 가게가 {n}곳뿐이라 변화가 크게 흔들릴 수 있어요."
+
+growth:
+  num: "01"
+  title: 성장 트렌드
+  kpis:
+    - {key: sales, label: "{업종} 총매출"}
+    - {key: stores, label: "{업종} 점포 수"}
+    - {key: sps, label: 점포당 평균 매출}
+  kpi_sub: "{기준} 대비"
+  chart_title: 매출과 점포 수의 변화
+  chart_note: "추이 지수 · 첫 달 = 100"
+
+consumption:
+  num: "02"
+  title: 소비 트렌드
+  who:
+    eyebrow: 어떤 고객이 커지고 있나
+    title: "{segment} 고객 비중이 가장 많이 늘었어요"
+    title_none: 고객층 구성은 비슷한 편이에요
+    value_label: "{업종} 카드 결제 고객 비중"
+    note_up: "{segment} 고객의 매출액도 함께 늘었어요."
+    note_down: "비중은 늘었지만 {segment} 고객의 매출액은 줄었어요."
+    segments:
+      여성 20·30대: female_2030_pct
+      여성 40대: female_40_pct
+      여성 50·60대: female_5060_pct
+      남성 20·30대: male_2030_pct
+      남성 40대: male_40_pct
+      남성 50·60대: male_5060_pct
+  when:
+    eyebrow: 언제 소비가 일어나나
+    title: "{band} 매출 비중이 가장 많이 늘었어요"
+    title_none: 시간대별 매출 구성은 비슷한 편이에요
+    value_label: "{업종} 매출 중 시간대 비중"
+    weekend_label: 주말 매출 비중
+    bands:
+      아침(05~10시): hour_0510_pct
+      점심(11~14시): hour_1114_pct
+      오후(15~17시): hour_1517_pct
+      저녁(18~21시): hour_1821_pct
+      심야(22~04시): hour_2204_pct
+    weekend: weekend_pct
+  min_change_pp: 1        # 이보다 작은 변화는 '비슷한 편'으로 표시 (%p)
+
+interest:
+  num: "03"
+  title: 관심 트렌드
+  sub: 최근 주목받는 지역 관련 키워드
+  metric: sns_hashtags      # 데이터에 생기면 자동 표시
+  empty: 키워드 데이터를 확보하면 채워져요
+
+actions:
+  num: "04"
+  title: 이 상권에서는 이렇게 준비해보세요
+  sub: 성장·소비·관심 트렌드와 업종별 주요 매출요인을 종합한 준비 방향
+  items:                    # 순서대로 카드 1~3
+    - {key: when, link: sec-02}
+    - {key: who, link: sec-02}
+    - {key: competition, link: sec-01}

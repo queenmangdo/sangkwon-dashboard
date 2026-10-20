@@ -1,0 +1,32 @@
+# 역할 → 실제 컬럼 이름. 데이터 컬럼 이름이 바뀌면 여기만 고친다. 없는 컬럼은 null.
+factor_table:
+  major: 대분류
+  middle: 중분류
+  var: 변수
+  name: 변수명
+  rank: 순위
+  share: 중요도 몫 (%)
+  direction: 방향
+  effect: 방향 크기 (%)          # 상위 25% vs 하위 25% 예측 매출 차이
+  reliability: 신뢰도
+  shape: null                    # 있으면 우선 사용 (increasing/decreasing/optimum/binary)
+  threshold: null
+  optimum: null
+  definition: null
+
+metrics_table:
+  cluster: cluster
+  month: year_month
+  major: null                    # 없으면 settings.default_major
+  middle: category_mi
+  stores: store_count
+  sales: total_amount
+  payments: sales_count
+
+area_table:
+  cluster: cluster
+  name: name
+  gu: gu
+  grid_count: grid_count
+  lat: lat
+  lon: lon

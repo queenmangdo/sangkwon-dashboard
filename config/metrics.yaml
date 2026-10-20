@@ -1,0 +1,40 @@
+# 지표 정의. 상권 × 업종 단위로, 비교 기간(settings.period_months) 안의 모든 행을 합쳐 계산한다.
+#   ratio      : sum(num) / sum(den)
+#   wavg       : sum(col × weight) / sum(weight)   (col 이 빈 행은 제외)
+#   sum_latest : 최근 달 sum(col)
+#   area       : 상권 단위 표(area_table)의 값
+# num/den/weight/col 에 역할 이름(stores, sales, payments)을 쓰면 columns.yaml 로 바뀐다.
+# transform: exp_pct → (exp(x) − 1) × 100
+
+sales_per_store:   {agg: ratio, num: sales, den: stores, unit: 원}
+stores_latest:     {agg: sum_latest, col: stores, unit: 곳}
+survival_1y_pct:   {agg: wavg, col: survival_1y_pct, weight: stores, unit: "%"}     # 향후 추가 컬럼
+
+# 결제(매출) 기준 비율 → 매출 가중
+hour_0510_pct:     {agg: wavg, col: hour_0510_pct, weight: sales, unit: "%"}
+hour_1114_pct:     {agg: wavg, col: hour_1114_pct, weight: sales, unit: "%"}
+hour_1517_pct:     {agg: wavg, col: hour_1517_pct, weight: sales, unit: "%"}
+hour_1821_pct:     {agg: wavg, col: hour_1821_pct, weight: sales, unit: "%"}
+hour_2204_pct:     {agg: wavg, col: hour_2204_pct, weight: sales, unit: "%"}
+weekend_pct:       {agg: wavg, col: weekend_pct, weight: sales, unit: "%"}
+corporate_pct:     {agg: wavg, col: corporate_pct, weight: sales, unit: "%"}
+delivery_share_pct: {agg: wavg, col: delivery_share_pct, weight: sales, unit: "%"}
+female_2030_pct:   {agg: wavg, col: female_2030_pct, weight: sales, unit: "%"}
+female_40_pct:     {agg: wavg, col: female_40_pct, weight: sales, unit: "%"}
+female_5060_pct:   {agg: wavg, col: female_5060_pct, weight: sales, unit: "%"}
+male_2030_pct:     {agg: wavg, col: male_2030_pct, weight: sales, unit: "%"}
+male_40_pct:       {agg: wavg, col: male_40_pct, weight: sales, unit: "%"}
+male_5060_pct:     {agg: wavg, col: male_5060_pct, weight: sales, unit: "%"}
+
+# 가게 단위 속성 → 가게 수 가중
+delivery_store_pct:  {agg: wavg, col: delivery_store_pct, weight: stores, unit: "%"}
+franchise_store_pct: {agg: wavg, col: franchise_store_pct, weight: stores, unit: "%"}
+near_food_n:         {agg: wavg, col: near_food_n, weight: stores, unit: 곳}
+near_franchise_pct:  {agg: wavg, col: near_franchise_pct, weight: stores, unit: "%"}
+near_grp_pct:        {agg: wavg, col: near_grp_pct, weight: stores, unit: "%"}
+near_mi_pct:         {agg: wavg, col: near_mi_pct, weight: stores, unit: "%"}
+near_sl_pct:         {agg: wavg, col: near_sl_pct, weight: stores, unit: "%"}
+
+# 상권 단위 (업종 무관) — 향후 추가 컬럼
+rent_per_m2:   {agg: area, col: rent_per_m2, unit: 원}
+sns_hashtags:  {agg: area, col: sns_hashtags}
