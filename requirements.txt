@@ -5,5 +5,6 @@ pandas>=2.0
 numpy
 pyyaml
 openpyxl
+pyarrow          # 상권 지표 parquet 읽기
 requests
 # prep/build_area.py 를 다시 돌릴 때만: geopandas

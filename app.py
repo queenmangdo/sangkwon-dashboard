@@ -29,7 +29,7 @@ if ss.middle not in mids:
     ss.middle = C.S("default_middle") if C.S("default_middle") in mids else mids[0]
 
 t, l1, s1, l2, s2 = st.columns([5.2, .55, 1.4, .55, 1.4], vertical_alignment="center")
-t.html('<span class="sk-title">상권 매출 요인</span><span class="sk-badge">샘플 데이터 · 숫자는 모두 예시예요</span>')
+t.html('<span class="sk-title">상권 매출 요인</span>')
 l1.html('<div class="sk-inline-label">대분류</div>')
 new_major = s1.selectbox("대분류", majors, index=majors.index(ss.major), label_visibility="collapsed")
 l2.html('<div class="sk-inline-label">중분류</div>')

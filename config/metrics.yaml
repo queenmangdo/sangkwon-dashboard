@@ -8,7 +8,7 @@
 
 sales_per_store:   {agg: ratio, num: sales, den: stores, unit: 원}
 stores_latest:     {agg: sum_latest, col: stores, unit: 곳}
-survival_1y_pct:   {agg: wavg, col: survival_1y_pct, weight: stores, unit: "%"}     # 향후 추가 컬럼
+survival_1y_pct:   {agg: area, col: survival_1y_pct, unit: "%"}     # 상권 단위 (음식점 전체, 23.01~25.07 개업 가게). 신규 10곳 미만 상권은 빈 값
 
 # 결제(매출) 기준 비율 → 매출 가중
 hour_0510_pct:     {agg: wavg, col: hour_0510_pct, weight: sales, unit: "%"}
@@ -32,8 +32,10 @@ franchise_store_pct: {agg: wavg, col: franchise_store_pct, weight: stores, unit:
 near_food_n:         {agg: wavg, col: near_food_n, weight: stores, unit: 곳}
 near_franchise_pct:  {agg: wavg, col: near_franchise_pct, weight: stores, unit: "%"}
 near_grp_pct:        {agg: wavg, col: near_grp_pct, weight: stores, unit: "%"}
-near_mi_pct:         {agg: wavg, col: near_mi_pct, weight: stores, unit: "%"}
-near_sl_pct:         {agg: wavg, col: near_sl_pct, weight: stores, unit: "%"}
+near_sl_n:           {agg: wavg, col: near_sl_n, weight: stores, unit: 곳}
+near_mi_n:           {agg: wavg, col: near_mi_n, weight: stores, unit: 곳}
+near_sl_top1_pct:    {agg: wavg, col: near_sl_top1_pct, weight: stores, unit: "%"}
+near_mi_top1_pct:    {agg: wavg, col: near_mi_top1_pct, weight: stores, unit: "%"}
 
 # 상권 단위 (업종 무관) — 향후 추가 컬럼
 rent_per_m2:   {agg: area, col: rent_per_m2, unit: 원}
