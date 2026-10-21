@@ -13,6 +13,10 @@ factor_table:
   threshold: null
   optimum: 최적값                 # 모양이 optimum 일 때 곡선 꼭대기 값
   definition: null
+  axis_lo: 눈금 시작              # 좋은 구간 띠 — 눈금 범위 (SHAP 곡선 첫·마지막 구간 값)
+  axis_hi: 눈금 끝
+  band_lo: 좋은 구간 시작          # 곡선 꼭대기에서 양옆으로, 꼭대기의 절반 아래로 떨어지기 전까지
+  band_hi: 좋은 구간 끝
 
 metrics_table:
   cluster: cluster
