@@ -39,6 +39,10 @@ class Factor:
     binary_action: str = ""
     high_text: str = ""
     low_text: str = ""
+    axis_lo: float | None = None      # 좋은 구간 띠 — 눈금 시작·끝
+    axis_hi: float | None = None
+    band_lo: float | None = None      # 매출이 가장 높은 구간 시작·끝
+    band_hi: float | None = None
 
     @property
     def usable(self) -> bool:
@@ -56,9 +60,34 @@ class Factor:
         return f"{v:,.0f}{self.unit}"
 
     @property
+    def band(self) -> tuple | None:
+        """(눈금 시작, 눈금 끝, 구간 시작, 구간 끝). 연속 변수이고 값이 다 있을 때만"""
+        v = (self.axis_lo, self.axis_hi, self.band_lo, self.band_hi)
+        if not self.confirmed or self.shape == "binary" or any(x is None for x in v) or v[1] <= v[0]:
+            return None
+        return v
+
+    @property
+    def band_label(self) -> str:
+        """'30~45%' · '45% 이상' · '13% 이하'. 구간이 눈금 전체면 ''"""
+        if not self.band:
+            return ""
+        a, b, lo, hi = self.band
+        if lo <= a and hi >= b:
+            return ""
+        if hi >= b:
+            return f"{self.fmt(lo)} 이상"
+        if lo <= a:
+            return f"{self.fmt(hi)} 이하"
+        return f"{self.fmt(lo)} 근처" if lo == hi else f"{lo:,.0f}~{self.fmt(hi)}"
+
+    @property
     def relation(self) -> str:
         if not self.confirmed:
             return "관계 확인 불가"
+        if self.band:
+            return (f"{self.band_label}일 때 매출이 가장 높은 편이에요" if self.band_label
+                    else "값에 따라 매출 차이가 크지 않은 편이에요")
         if self.shape == "increasing":
             return (f"{self.fmt(self.threshold)}보다 높아질수록 매출이 높아지는 편이에요" if self.threshold is not None
                     else "높을수록 매출이 높은 편이에요")
@@ -128,6 +157,8 @@ def factors_for(major: str, middle: str, n: int = 5) -> tuple[list[Factor], str]
             optimum=_num(r["optimum"]) if _num(r["optimum"]) is not None else _num(get("optimum")),
             effect=_num(r["effect"]), share=_num(r["share"]), reliability=str(r["reliability"]),
             binary_action=get("binary_action"), high_text=get("high_text"), low_text=get("low_text"),
+            axis_lo=_num(r.get("axis_lo")), axis_hi=_num(r.get("axis_hi")),
+            band_lo=_num(r.get("band_lo")), band_hi=_num(r.get("band_hi")),
         ))
     return out, note
 

@@ -44,6 +44,16 @@ header[data-testid="stHeader"] { background: transparent; }
 .sk-fcard .t { font-weight: 800; font-size: 14px; margin: 8px 0 6px; }
 .sk-fcard .k { color: var(--indigo-text); font-weight: 700; margin-top: 8px; font-size: 11px; }
 .sk-fcard .na { color: var(--muted); font-weight: 600; }
+/* 좋은 구간 띠 — 눈금 위에 매출이 가장 높은 구간 (0/1 변수는 안 함 / 함 두 칸) */
+.sk-band { position: relative; height: 46px; margin: 2px 0; }
+.sk-band .lab { position: absolute; top: 0; transform: translateX(-50%); font-size: 12px; font-weight: 800; color: var(--indigo); white-space: nowrap; }
+.sk-band .track { position: absolute; top: 20px; left: 0; right: 0; height: 8px; background: var(--lavender); border-radius: 4px; }
+.sk-band .track i { position: absolute; top: 0; bottom: 0; background: var(--indigo); border-radius: 4px; }
+.sk-band .ax { position: absolute; top: 31px; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
+.sk-band.bin .cells { position: absolute; top: 8px; left: 0; right: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+.sk-band.bin .cells span { background: var(--lavender); color: var(--muted); text-align: center; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 2px 0; }
+.sk-band.bin .cells span.on { background: var(--indigo); color: #fff; font-weight: 800; }
+.sk-band.bin .ax { justify-content: flex-end; }
 .sk-fnote { color: var(--muted); font-size: 11px; margin-top: 10px; }
 .sk-empty-box { color: var(--muted); font-size: 13px; padding: 18px 4px; }
 
@@ -69,6 +79,7 @@ header[data-testid="stHeader"] { background: transparent; }
 .sk-big.pos { color: var(--good); } .sk-big.neg { color: #C5221F; }
 .sk-sub b.sk-pos { color: var(--good); } .sk-sub b.sk-neg { color: #C5221F; }
 .sk-sub { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.sk-na { font-size: 15px; font-weight: 800; color: var(--muted); line-height: 1.3; }   /* 값 대신 '표본 부족' 같은 안내 */
 .sk-sub b { color: var(--text); }
 .sk-bar { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); margin-top: 6px; }
 .sk-bar i { display: block; height: 6px; border-radius: 3px; }

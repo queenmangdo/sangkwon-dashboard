@@ -80,6 +80,22 @@ def curve_img(kind: str) -> str:
     return f'<img alt="" src="data:image/svg+xml;base64,{base64.b64encode(svg.encode()).decode()}"/>'
 
 
+def band_html(f) -> str:
+    """좋은 구간 띠: 눈금 위에 매출이 가장 높은 구간을 칠함. 0/1 변수는 '안 함 / 함' 두 칸. 띠 값이 없으면 곡선 아이콘"""
+    if f.confirmed and f.shape == "binary":
+        return ('<div class="sk-band bin"><div class="cells"><span>안 함</span><span class="on">함</span></div>'
+                '<div class="ax"><span>매출이 더 높은 쪽</span></div></div>')
+    if not f.band:
+        return curve_img(f.curve)
+    a, z, lo, hi = f.band
+    pos = lambda v: max(0.0, min(100.0, (v - a) / (z - a) * 100))
+    left, right = pos(lo), pos(hi)
+    mid = min(max((left + right) / 2, 18), 82)          # 글자가 카드 밖으로 안 나가게
+    return (f'<div class="sk-band"><div class="lab" style="left:{mid:.0f}%">{esc(f.band_label)}</div>'
+            f'<div class="track"><i style="left:{left:.0f}%;width:{max(right - left, 3):.0f}%"></i></div>'
+            f'<div class="ax"><span>{esc(f.fmt(a))}</span><span>{esc(f.fmt(z))}</span></div></div>')
+
+
 def factor_box(major: str, middle: str, factors, note: str) -> None:
     head = (f'<h3>선택하신 <span class="sk-chip">{esc(major)}</span><span class="sk-chip">{esc(middle)}</span>'
             f' 업종은 아래 {len(factors) or 5}가지 항목을 눈여겨보는 게 좋아요!</h3>'
@@ -92,7 +108,7 @@ def factor_box(major: str, middle: str, factors, note: str) -> None:
     for f in factors:
         rel = f'<div>{esc(f.relation)}</div>' if f.confirmed else '<div class="na">관계 확인 불가</div>'
         cards.append(f'<div class="sk-fcard"><span class="n">{f.rank}</span><div class="t">{esc(f.name)}</div>'
-                     f'{curve_img(f.curve)}<div class="k">어떤 값이에요</div><div>{esc(f.definition)}</div>'
+                     f'{band_html(f)}<div class="k">어떤 값이에요</div><div>{esc(f.definition)}</div>'
                      f'<div class="k">매출과의 관계</div>{rel}</div>')
     warn = f'<div class="sk-warn">{esc(note)}</div>' if note else ""
     st.html(f'<div class="sk-fbox">{head}<div class="sk-fgrid" style="grid-template-columns:repeat({len(cards)},1fr)">'

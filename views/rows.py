@@ -164,7 +164,11 @@ def r_pct_judge(spec, ctx: Ctx):
     def fn(c, v):
         x, b = v.get(m), ctx.base.get(m)
         if not isnum(x):
-            return empty("–")
+            if not spec.get("na_text"):
+                return empty("–")
+            base_txt = f'<br>서울 보통 <b>{num(b, d=0)}%</b>' if isnum(b) else ""
+            return cell(f'<div class="sk-na">{esc(spec.get("na_title", "추정 불가"))}</div>'
+                        f'<div class="sk-sub">{esc(spec["na_text"])}{base_txt}</div>')
         t = ""
         if isnum(b):
             t = tag("유리", "good") if x - b >= g else tag("아쉬움", "bad") if x - b <= -g else tag("보통", "mid")

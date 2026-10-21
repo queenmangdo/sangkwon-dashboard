@@ -76,8 +76,9 @@ def factor_table() -> pd.DataFrame:
         out[k] = df[c] if c and c in df else pd.NA
     out["major"], out["middle"] = out["major"].astype(str), out["middle"].astype(str)
     out["rank"] = pd.to_numeric(out["rank"], errors="coerce")
-    for k in ("share", "effect", "threshold", "optimum"):
-        out[k] = pd.to_numeric(out[k], errors="coerce")
+    for k in ("share", "effect", "threshold", "optimum", "axis_lo", "axis_hi", "band_lo", "band_hi"):
+        if k in out:
+            out[k] = pd.to_numeric(out[k], errors="coerce")
     return out
 
 
