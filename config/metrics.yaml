@@ -37,6 +37,6 @@ near_mi_n:           {agg: wavg, col: near_mi_n, weight: stores, unit: 곳}
 near_sl_top1_pct:    {agg: wavg, col: near_sl_top1_pct, weight: stores, unit: "%"}
 near_mi_top1_pct:    {agg: wavg, col: near_mi_top1_pct, weight: stores, unit: "%"}
 
-# 상권 단위 (업종 무관) — 향후 추가 컬럼
-rent_per_m2:   {agg: area, col: rent_per_m2, unit: 원}
-sns_hashtags:  {agg: area, col: sns_hashtags}
+# 상권 단위 (업종 무관) — data/area.csv
+rent_per_m2:     {agg: area, col: rent_per_m2, unit: 원}
+trend_keywords:  {agg: area, col: trend_keywords}     # 네이버 검색 상승 키워드 (쉼표 구분, 최대 3개)

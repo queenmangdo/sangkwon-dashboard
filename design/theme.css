@@ -69,6 +69,12 @@ header[data-testid="stHeader"] { background: transparent; }
 .sk-label .tag-wip { background: var(--yellow-bg); color: var(--yellow); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-top: 6px; opacity: 1; }
 .sk-cell { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 13px 15px; min-height: 72px; }
 .sk-cell.hl { border: 2px solid var(--indigo); background: var(--lavender-bg); }
+/* 비교 표의 상권 칸 — 칸 전체가 상세 페이지 링크 */
+.sk-go { display: block; color: inherit; text-decoration: none; }
+.sk-go:hover, .sk-go:visited { color: inherit; text-decoration: none; }
+.sk-go > .sk-cell, .sk-go > .sk-head { height: 100%; transition: box-shadow .12s, border-color .12s; }
+.sk-go:hover > .sk-cell { border-color: var(--indigo); box-shadow: 0 2px 8px rgba(45, 42, 132, .12); }
+.sk-go:hover > .sk-head { filter: brightness(1.15); }
 .sk-cell.empty { background: #FAFAFC; color: #B2B2C2; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 .sk-section { display: flex; align-items: center; gap: 10px; color: var(--indigo); font-weight: 800; font-size: 13px; margin: 18px 0 8px; }
 .sk-section:after { content: ""; flex: 1; border-top: 1px solid var(--line); }

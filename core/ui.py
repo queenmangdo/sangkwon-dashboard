@@ -5,6 +5,7 @@ import base64
 import html as _h
 import math
 import numbers
+import re
 
 import streamlit as st
 
@@ -34,6 +35,15 @@ def num(v, scale: float = 1, d: int | None = None) -> str:
     return f"{x:,.{d}f}"
 
 
+def split_tags(*raws) -> list[str]:
+    """태그 칸(들) → 태그 목록. 쉼표·| ·띄어쓰기 어느 것으로 구분돼 있어도 나누고, 겹치면 한 번만."""
+    out: list[str] = []
+    for raw in raws:
+        if isinstance(raw, str):
+            out += [t for t in re.split(r"[,|\s]+", raw) if t and t not in out]
+    return out
+
+
 # ------------------------------------------------------------------ 격자
 def section(title: str) -> None:
     st.html(f'<div class="sk-section">{esc(title)}</div>')
@@ -51,6 +61,11 @@ def row(label_html: str, cells: list[str]) -> None:
 
 def cell(inner: str, hl: bool = False) -> str:
     return f'<div class="sk-cell{" hl" if hl else ""}">{inner}</div>'
+
+
+def go(inner: str, href: str) -> str:
+    """칸 전체를 누르면 href 로 이동 (비교 표 → 상권 상세)."""
+    return f'<a class="sk-go" href="{esc(href)}" target="_self" title="상권 상세 보기">{inner}</a>'
 
 
 def empty(text: str = "–") -> str:

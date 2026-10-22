@@ -12,7 +12,7 @@ from core.factors import factors_for
 from core.geo import info
 from core.loader import area_table
 from core.trend import biggest_share_change, compare, llm_payload, monthly, periods, segment_sales_change
-from core.ui import INDIGO, esc, isnum
+from core.ui import INDIGO, esc, isnum, split_tags
 
 ss = st.session_state
 D = C.detail()
@@ -182,14 +182,14 @@ when_top = top_change(N["bands"])
 when_html = share_card(N, when_top, "band", wk_html, N["bands"])
 st.html(f'<div class="sk-dgrid2">{who_html}{when_html}</div>')
 
-# ------------------------------------------------------------------ 03 관심 트렌드 (데이터 확보 전: 빈 칸)
+# ------------------------------------------------------------------ 03 관심 트렌드 (SNS 해시태그: 기본 + 세부)
 I = D["interest"]
 sec(I["num"], I["title"], "sec-03", I.get("sub", ""))
 a = area_table()
-raw = a.loc[cid, I["metric"]] if (I["metric"] in a and cid in a.index) else None
-if isinstance(raw, str) and raw.strip():
-    tags = [t.strip() for t in raw.replace(",", "|").split("|") if t.strip()]
-    st.html('<div class="sk-kw">' + "".join(f'<span>↗ {esc(t)}</span>' for t in tags) + "</div>")
+raws = [a.loc[cid, m] for m in I["metrics"] if m in a and cid in a.index]
+tags = split_tags(*raws)[:int(I.get("max", 9))]
+if tags:
+    st.html('<div class="sk-kw">' + "".join(f'<span>{esc(t)}</span>' for t in tags) + "</div>")
 else:
     st.html(f'<div class="sk-dempty">{esc(I["empty"])}</div>')
 

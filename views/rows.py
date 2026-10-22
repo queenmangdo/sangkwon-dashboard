@@ -6,10 +6,11 @@ from dataclasses import dataclass
 import pandas as pd
 
 from core import config as C
+from core import state
 from core.engine import available
 from core.factors import llm_sentence
 from core.loader import area_table
-from core.ui import bars, cell, empty, esc, isnum, label, num, row, tag
+from core.ui import bars, cell, empty, esc, go, isnum, label, num, row, split_tags, tag
 
 
 @dataclass
@@ -34,7 +35,7 @@ def _cells(ctx: Ctx, fn) -> list[str]:
         elif not ctx.vals.get(cid):
             out.append(empty(f"'{ctx.industry}' 데이터가 아직 없어요" if ctx.is_total else f"최근 {ctx.industry} 가게가 없어요"))
         else:
-            out.append(fn(cid, ctx.vals[cid]))
+            out.append(go(fn(cid, ctx.vals[cid]), state.detail_href(cid)))
     return out
 
 
@@ -257,13 +258,14 @@ def r_tags(spec, ctx: Ctx):
     if not available(m):
         return _wip(spec, ctx)
     k = int(spec.get("max", 3))
+    hash_ = spec.get("hash", True)        # false 면 '#' 을 붙이지 않음 (검색 키워드처럼 해시태그가 아닌 경우)
 
     def fn(c, v):
-        raw = v.get(m)
-        if not isinstance(raw, str) or not raw.strip():
+        tags = split_tags(v.get(m))[:k]
+        if not tags:
             return empty("–")
-        tags = [t.strip() for t in raw.replace(",", "|").split("|") if t.strip()][:k]
-        return cell("".join(f'<span class="sk-hash">{esc(t if t.startswith("#") else "#" + t)}</span>' for t in tags))
+        return cell("".join(f'<span class="sk-hash">{esc("#" + t if hash_ and not t.startswith("#") else t)}</span>'
+                            for t in tags))
     row(label(_lab(spec, ctx), spec.get("sub", "")), _cells(ctx, fn))
 
 
