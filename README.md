@@ -13,7 +13,7 @@
 | 화면 | 하는 일 |
 |---|---|
 | **상권 비교** | 상단에서 업종을 고르고, 지도 팝업에서 상권을 1~3곳 골라 같은 항목으로 나란히 비교. 맨 위에 업종별 매출 요인 5가지 카드, 매출 요인 하이라이트(가장 유리·불리) |
-| **상권 상세** | 비교에서 고른 상권 하나의 1년 트렌드 — 성장(매출·점포 수), 소비(누가·언제), 관심(키워드), 준비 방향 |
+| **상권 상세** | 비교 표의 상권 칸(또는 머리글 "상권 A ›")을 누르거나 상단 탭으로 들어가요. 고른 상권 하나의 1년 트렌드 — 성장(매출·점포 수), 소비(누가·언제), 관심(키워드), 준비 방향 |
 
 선택 상태는 URL 에 남아요 (`?major=음식점&middle=한식&c=12,301,-&d=12`). 새로고침·링크 공유해도 유지돼요.
 
@@ -66,7 +66,7 @@ sangkwon_app/
 │  ├─ final_restaurant_cluster_sl_m.csv      상권 지표 (샘플)
 │  ├─ 중분류별 요인 중요도 (음식점).xlsx       요인 표 (샘플)
 │  ├─ cluster_seoul_t9_202607.gpkg           격자 × 상권 번호 (build_area.py 입력)
-│  ├─ area.csv             상권 단위 표 (이름·구·동·대표 도로·격자 수·넓이·중심 좌표 + 향후 컬럼 rent_per_m2, sns_hashtags)
+│  ├─ area.csv             상권 단위 표 (이름·구·동·대표 도로·격자 수·넓이·중심 좌표 + 임대료·생존율·트렌드 키워드·SNS 해시태그)
 │  ├─ area_shapes.geojson  상권 경계
 │  └─ admdong_seoul.geojson, roads_seoul.geojson
 │                          build_area.py 가 받아 둔 행정동·도로 데이터 (앱 실행에는 불필요, 이름 다시 만들 때 재사용)
@@ -90,7 +90,7 @@ sangkwon_app/
 |---|---|---|
 | 요인 표 | `data/중분류별 요인 중요도 (음식점).xlsx` | 대분류, 중분류, 변수, 변수명, 순위, 중요도 몫, 방향, 방향 크기(상위 25% vs 하위 25% 예측 매출 차이 %), 신뢰도 / 있으면 shape, threshold, optimum, definition |
 | 상권 지표 | `data/final_restaurant_cluster_sl_m.csv` (상권 × 월 × 소분류, 25.08~26.07) | 상권 ID, 월(YYYYMM), 대분류(없으면 settings 의 default_major), 중분류, 가게 수, 매출, 결제 건수 + metrics.yaml 에 적힌 비율 컬럼들 |
-| 상권 단위 | `data/area.csv` ← `data/cluster_seoul_t9_202607.gpkg` | 상권 ID, 이름, 구, 격자 수, 중심 좌표 (+ 향후 rent_per_m2, sns_hashtags) |
+| 상권 단위 | `data/area.csv` ← `data/cluster_seoul_t9_202607.gpkg` | 상권 ID, 이름, 구, 격자 수, 중심 좌표 (+ rent_per_m2, survival_1y_*, trend_keywords, sns_hashtags_main·detail — 6-4-1 참고) |
 
 - 상권 지표가 소분류 단위여도 앱이 중분류로 합쳐서 계산해요. 실제 데이터가 처음부터 중분류 단위면 그대로 돼요.
 - 요인 표의 `변수` 값이 상권 지표의 컬럼 이름과 같으면 자동 연결돼요. 다르면 `variables.csv` 의 `metric` 열로 연결해요 (예: `has_delivery → delivery_store_pct`).
@@ -152,7 +152,23 @@ sangkwon_app/
 |---|---|---|
 | 신규 매장 1년 생존율 | `survival_1y_pct` | 상권 지표 (상권 × 월 × 업종) |
 | 평균 임대료 (1층·㎡당 월) | `rent_per_m2` | `data/area.csv` |
-| SNS 트렌드 / 상세 03 관심 트렌드 | `sns_hashtags` ("#a\|#b\|#c") | `data/area.csv` |
+
+### 6-4-1. 트렌드 키워드 (연결됨)
+
+| 화면 자리 | 컬럼 (`data/area.csv`) | 내용 | 채워진 상권 |
+|---|---|---|---|
+| 비교 › 기타 › **검색 트렌드** (최대 3개, '#' 없음) | `trend_keywords` ("a, b, c") | 네이버 검색광고 API 후보 → 데이터랩으로 최근 2주 상승 확인 | 962곳 중 315곳 |
+| 상세 › **03 관심 트렌드** (최대 9개) | `sns_hashtags_main` → `sns_hashtags_detail` ("#a #b", 띄어쓰기) | 인스타식 지명 해시태그(최대 4) + 실제 수집한 세부 해시태그(최대 5) | main 960곳, detail 146곳 |
+
+- 칸 이름·개수는 `config/items.yaml`(비교), `config/detail.yaml → interest`(상세)에서 바꿔요. 태그 나누기는 `core/ui.py → split_tags()` 하나로 해요.
+- 그 밖의 트렌드 칸(`trend_status`, `trend_details` 등 `trend_*`, `area_feature_keywords`)도 `area.csv` 에 들어 있지만 아직 화면에서는 쓰지 않아요.
+- `prep/build_area.py` 를 다시 돌리면 `area.csv` 가 새로 만들어져 위 칸들(임대료·생존율 포함)이 사라져요. 다시 돌린 뒤에는 이 칸들을 cluster 번호로 다시 붙여야 해요.
+- 알려진 데이터 문제 (확인 필요)
+  - 보조태그(승현 키워드에서 온 해시태그)가 붙은 상권: 문서엔 144곳, 실제 파일은 137곳 (은평구 신사동 7곳을 빼기 전 숫자로 추정). 은평구 신사1동·신사2동(cluster 426, 450)은 main 해시태그가 비어 있어요.
+  - 음식 필터 단어 목록에 삼겹살·일식·혼밥이 없어 성수역삼겹살·강남역일식 등이 보조태그에서 빠졌어요.
+  - `sns_hashtags_detail` 은 146곳이지만 종류는 33개예요 (같은 해시태그를 여러 상권이 같이 씀).
+  - `area_feature_keywords` 는 상태 필터 없이 들어가 '최근둔화' 키워드도 포함돼요.
+  - `trend_keywords` 에 지역과 맞지 않는 키워드가 섞여 있어요 (예: 공항동 '광주송정역', 소공동 '시흥시청역', '신창동날씨'). 지금은 그대로 보여줘요.
 
 ### 6-5. 화면·기능
 - [ ] **상권 이름 중복 2쌍**: 노원구 상계3·4동 · 덕릉로, 서초구 양재1동 · 송동길 (동 하나·도로 하나뿐이라 규칙으로 구분 불가). 필요하면 `prep/build_area.py → make_names` 에 규칙 추가.

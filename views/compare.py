@@ -8,7 +8,7 @@ from core import state
 from core.engine import baseline, compute, fmt_ym, is_total, latest, major_counts, values_for, window
 from core.factors import factors_for, highlights
 from core.geo import info
-from core.ui import esc, factor_box, label, section
+from core.ui import esc, factor_box, go, label, section
 from views.picker import mini_map, picker
 from views.rows import RENDER, Ctx
 
@@ -31,7 +31,8 @@ if m.empty:
     st.info(f"'{industry}' 업종의 상권 데이터가 아직 없어요. 데이터에 해당 행이 추가되면 채워져요.")
 
 # ------------------------------------------------------------------ 머리글 + 지도(선택) 행
-heads = "".join(f'<div class="sk-head{"" if c is not None else " off"}">상권 {state.letter(i)}</div>' for i, c in enumerate(slots))
+heads = "".join(go(f'<div class="sk-head">상권 {state.letter(i)} ›</div>', state.detail_href(c)) if c is not None
+                else f'<div class="sk-head off">상권 {state.letter(i)}</div>' for i, c in enumerate(slots))
 st.html(f'<div class="sk-grid" style="margin-bottom:6px"><div class="sk-head">후보 상권</div>{heads}</div>')
 
 H = 250

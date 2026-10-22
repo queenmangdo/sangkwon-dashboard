@@ -51,8 +51,9 @@ consumption:
 interest:
   num: "03"
   title: 관심 트렌드
-  sub: 최근 주목받는 지역 관련 키워드
-  metric: sns_hashtags      # 데이터에 생기면 자동 표시
+  sub: 인스타그램에서 이 지역을 부를 때 쓰는 해시태그
+  metrics: [sns_hashtags_main, sns_hashtags_detail]   # area.csv 칸. 기본(지명) → 세부 순서로 이어 붙임
+  max: 9
   empty: 키워드 데이터를 확보하면 채워져요
 
 actions:

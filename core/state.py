@@ -1,6 +1,8 @@
 """페이지 간 공유 상태 (session_state ↔ URL).  예: ?major=음식점&middle=한식&c=12,301,-&d=12"""
 from __future__ import annotations
 
+from urllib.parse import urlencode
+
 import streamlit as st
 
 from . import config as C
@@ -30,6 +32,14 @@ def sync_url() -> None:
         "c": ",".join("-" if s is None else str(s) for s in ss.slots),
         "d": "" if ss.detail is None else str(ss.detail),
     })
+
+
+def detail_href(cid: int) -> str:
+    """비교 표의 상권 칸을 눌렀을 때 갈 상세 페이지 주소 (지금 고른 상권·업종을 그대로 담음)."""
+    ss = st.session_state
+    q = {"major": ss.major, "middle": ss.middle,
+         "c": ",".join("-" if s is None else str(s) for s in ss.slots), "d": str(cid)}
+    return "detail?" + urlencode(q)
 
 
 def selected() -> list[tuple[int, int]]:
