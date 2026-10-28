@@ -51,8 +51,12 @@ consumption:
 interest:
   num: "03"
   title: 관심 트렌드
-  sub: 최근 주목받는 지역 관련 키워드
-  metric: sns_hashtags      # 데이터에 생기면 자동 표시
+  sub: 요즘 이 동네에서 사람들이 찾는 키워드
+  details: sns_keyword_details   # JSON (prep/build_sns.py). 있으면 키워드 카드로 표시
+  metric: sns_hashtags           # 카드 데이터가 없을 때 해시태그만 표시
+  seeds: sns_hashtags_main       # 수집에 쓴 지역명 (출처 문구용)
+  max: 8                         # 카드 최대 개수 (고른 업종과 맞는 키워드가 먼저)
+  source: "{지역} 인스타 해시태그와 AI가 제안한 후보 중 네이버 검색 데이터가 확인된 키워드만 남겼어요. 변화는 최근 2주 검색량을 그 전 2주와 비교한 거예요."
   empty: 키워드 데이터를 확보하면 채워져요
 
 actions:
