@@ -12,6 +12,7 @@ from core.factors import factors_for
 from core.geo import info
 from core.loader import area_table
 from core.trend import biggest_share_change, compare, llm_payload, monthly, periods, segment_sales_change
+from core.sns import cards_html as sns_cards, parse_details, parse_tags
 from core.ui import INDIGO, esc, isnum
 
 ss = st.session_state
@@ -182,14 +183,24 @@ when_top = top_change(N["bands"])
 when_html = share_card(N, when_top, "band", wk_html, N["bands"])
 st.html(f'<div class="sk-dgrid2">{who_html}{when_html}</div>')
 
-# ------------------------------------------------------------------ 03 관심 트렌드 (데이터 확보 전: 빈 칸)
+# ------------------------------------------------------------------ 03 관심 트렌드 (SNS 키워드 + 검색 추이)
 I = D["interest"]
 sec(I["num"], I["title"], "sec-03", I.get("sub", ""))
 a = area_table()
+det_col = I.get("details", "sns_keyword_details")
+details = parse_details(a.loc[cid, det_col]) if (det_col in a and cid in a.index) else []
 raw = a.loc[cid, I["metric"]] if (I["metric"] in a and cid in a.index) else None
-if isinstance(raw, str) and raw.strip():
-    tags = [t.strip() for t in raw.replace(",", "|").split("|") if t.strip()]
-    st.html('<div class="sk-kw">' + "".join(f'<span>↗ {esc(t)}</span>' for t in tags) + "</div>")
+seeds = a.loc[cid, I["seeds"]] if (I.get("seeds") in a and cid in a.index) else None
+if details:
+    # 키워드 카드: 업종 · 키워드 · 인스타 언급 수 · (DataLab 있으면) 검색 추이
+    st.html(sns_cards(details, major, int(I.get("max", 8))))
+    src = I.get("source", "")
+    if isinstance(seeds, str) and seeds.strip():
+        src = fill(src, 지역=seeds.replace("|", " "))
+    if src:
+        st.html(f'<div class="sk-dnote">{esc(src)}</div>')
+elif parse_tags(raw):
+    st.html('<div class="sk-kw">' + "".join(f'<span>↗ {esc(t)}</span>' for t in parse_tags(raw)) + "</div>")
 else:
     st.html(f'<div class="sk-dempty">{esc(I["empty"])}</div>')
 
