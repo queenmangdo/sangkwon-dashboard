@@ -43,5 +43,20 @@ def get(name: str, default: str | None = None) -> str | None:
     return default
 
 
+def source(name: str) -> str | None:
+    """키가 어디서 읽혔는지 (진단용): 환경변수 | .env | st.secrets | None. 값은 돌려주지 않는다."""
+    if os.environ.get(name):
+        return "환경변수"
+    if _dotenv().get(name):
+        return ".env"
+    try:
+        import streamlit as st
+        if st.secrets.get(name):
+            return "st.secrets"
+    except Exception:
+        pass
+    return None
+
+
 def llm_key() -> str | None:
     return get(LLM_KEY)

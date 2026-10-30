@@ -52,3 +52,9 @@ if c2.button("상권 상세", key="tab_detail", type="primary" if cur == "detail
 st.html('<div style="border-top:1px solid #E3E3EE;margin:-8px 0 6px"></div>')
 
 pg.run()
+
+# ------------------------------------------------------------------ 진단: 주소 끝에 ?debug=1 을 붙이면 LLM 연결 상태를 보여줌
+if st.query_params.get("debug") == "1":
+    from core import llm
+    with st.expander("LLM 연결 진단", expanded=True):
+        st.json(llm.diagnose(test=st.button("테스트 호출")))

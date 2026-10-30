@@ -17,6 +17,7 @@ from . import secrets
 
 _cache: dict[str, str] = {}      # 성공한 응답만 (실패는 다음에 다시 시도). 같은 입력은 앱이 켜져 있는 동안 재사용
 _CACHE_MAX = 2000
+last_error: str | None = None     # 가장 최근 실패 이유 (진단용, 키 값은 담지 않음)
 
 
 def enabled() -> bool:
@@ -40,7 +41,16 @@ def _call(system: str, user: str) -> str | None:
         )
         r.raise_for_status()
         text = (r.json()["choices"][0]["message"]["content"] or "").strip()
-    except Exception:
+    except Exception as e:
+        global last_error
+        resp = getattr(e, "response", None)
+        detail = ""
+        if resp is not None:
+            try:
+                detail = " · " + str(resp.json().get("error", {}).get("message", ""))[:200]
+            except Exception:
+                detail = ""
+        last_error = f"{type(e).__name__}{f' {resp.status_code}' if resp is not None else ''}{detail}"
         return None
     if not text:
         return None
@@ -64,3 +74,15 @@ def ask_many(reqs: list[tuple[str, dict] | None]) -> list[str | None]:
     with ThreadPoolExecutor(max_workers=min(len(reqs), 6)) as ex:
         futs = [ex.submit(ask, *r) if r else None for r in reqs]
         return [f.result() if f else None for f in futs]
+
+
+def diagnose(test: bool = False) -> dict:
+    """연결 상태 점검 (키 값은 보여주지 않음). test=True 면 아주 짧게 실제 호출해 봄."""
+    cfg = C.S("llm", {})
+    out = {"키 위치": secrets.source(secrets.LLM_KEY) or "못 찾음", "모델": cfg.get("model") or "(비어 있음)",
+           "주소": cfg.get("base_url"), "켜짐": enabled()}
+    if test and enabled():
+        r = _call("한 단어로만 답해.", "안녕")
+        out["테스트 응답"] = r or "실패"
+    out["마지막 실패 이유"] = last_error or "-"
+    return out
