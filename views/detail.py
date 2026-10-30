@@ -6,12 +6,13 @@ import pandas as pd
 import streamlit as st
 
 from core import config as C
-from core import state
+from core import llm as llm_api
+from core import narrative, state
 from core.engine import compute, fmt_ym, is_total
 from core.factors import factors_for
 from core.geo import info
 from core.loader import area_table
-from core.trend import biggest_share_change, compare, llm_payload, monthly, periods, segment_sales_change
+from core.trend import biggest_share_change, compare, monthly, periods, segment_sales_change
 from core.sns import cards_html as sns_cards, parse_details, parse_tags
 from core.ui import INDIGO, esc, isnum
 
@@ -50,8 +51,10 @@ def pct(v, d=1, sign=True) -> str:
     return "–" if not isnum(v) else (f"{v:+.{d}f}%" if sign else f"{v:.{d}f}%")
 
 
-def llm(vars_text: str = "") -> str:
-    """LLM 연결 자리 표시 — 어떤 값으로 문장을 만들지 함께 보여줌."""
+def llm(vars_text: str = "", text: str | None = None) -> str:
+    """LLM 문장이 있으면 그대로, 없으면 자리 표시 — 어떤 값으로 문장을 만들지 함께 보여줌."""
+    if text:
+        return narrative.html(text)
     v = f"{esc(vars_text)} — " if vars_text else ""
     return f'<span class="sk-llm-tag">LLM</span><span class="sk-llm">{v}{esc(PH)}</span>'
 
@@ -100,7 +103,9 @@ if n_latest < int(C.S("sample_min_stores", 3)):
 G = D["growth"]
 sec(G["num"], G["title"], "sec-01")
 chg = cmp["chg"]
-st.html(f'<div class="sk-headline">{llm(f"총매출 {pct(chg["sales"])} · 점포 수 {pct(chg["stores"])} · 점포당 {pct(chg["sps"])}")}</div>')
+headline = llm_api.ask(*req) if (req := narrative.growth_req(
+    industry, f"{P.recent_label} vs {P.base_label}", chg, n_latest < int(C.S("sample_min_stores", 3)))) else None
+st.html(f'<div class="sk-headline">{llm(f"총매출 {pct(chg["sales"])} · 점포 수 {pct(chg["stores"])} · 점포당 {pct(chg["sps"])}", headline)}</div>')
 cards = ""
 for k in G["kpis"]:
     v = chg.get(k["key"])
@@ -244,19 +249,26 @@ if top_f:
     chips.append(f"주요 요인 · {top_f.short}")
 evid["competition"] = (lines, chips)
 
-rows = ""
+cmp_label = f"{P.recent_label} vs {P.base_label}"
+fa = fb = None
+if top_f:
+    fa, fb = cmp["recent"].get(top_f.metric), cmp["base"].get(top_f.metric)
+    fa, fb = (fa, fb) if isnum(fa) and isnum(fb) else (None, None)
+reqs = {
+    "when": narrative.when_req(industry, cmp_label, when_top, largest_now(N["bands"]), (wb, wa) if isnum(wa) and isnum(wb) else None),
+    "who": narrative.who_req(industry, cmp_label, who_top, largest_now(W["segments"]),
+                             segment_sales_change(cmp, W["segments"][who_top[0]]) if who_top else None),
+    "competition": narrative.competition_req(industry, cmp_label, chg, top_f.name if top_f and fa is not None else None, fb, fa),
+}
 shown = [it for it in A["items"] if it["key"] in evid]
+titles = dict(zip((it["key"] for it in shown), llm_api.ask_many([reqs.get(it["key"]) for it in shown])))  # 카드 제목을 한 번에 받아 둠
+
+rows = ""
 for i, it in enumerate(shown, 1):
     lines, chips = evid[it["key"]]
     rows += (f'<div class="sk-act"><span class="n">{i:02d}</span>'
-             f'<div class="body"><div class="tt">{llm(" · ".join(chips))}</div>'
+             f'<div class="body"><div class="tt">{llm(" · ".join(chips), titles.get(it["key"]))}</div>'
              f'<div class="ev"><span>분석 근거</span><div>{"<br>".join(esc(x) for x in lines)}</div></div></div>'
              f'<div class="chips">{"".join(f"<em>{esc(c)}</em>" for c in chips)}</div>'
              f'<a class="more" href="#{it["link"]}">근거 보기 ›</a></div>')
 st.html(f'<div class="sk-acts">{rows}</div>')
-
-# LLM 연결 시 넘길 입력 (화면에는 표시하지 않음)
-ss["_detail_llm_payload"] = llm_payload(
-    f"{major} > {industry}", name, P, cmp,
-    who_top[0] if who_top else None, when_top[0] if when_top else None,
-    (wb, wa) if isnum(wa) and isnum(wb) else None, top_f.name if top_f else None)

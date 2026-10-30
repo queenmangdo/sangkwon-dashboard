@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 from core import config as C
+from core import llm, narrative
 from core.engine import available
 from core.factors import llm_sentence
 from core.loader import area_table
@@ -55,6 +56,15 @@ def _lab(spec, ctx):
 # ------------------------------------------------------------------ type 별
 def r_highlight(spec, ctx: Ctx):
     T = C.S("highlight_T", 5)
+    hs = [ctx.hl[c] for c in ctx.slots if c in ctx.hl]
+    reqs = [narrative.highlight_req(h) for h in hs]
+    texts = {id(h): t for h, t in zip(hs, llm.ask_many(reqs))}   # 상권별 문장을 한 번에 받아 둠
+
+    def sentence(h, placeholder: str) -> str:
+        """LLM 문장이 있으면 본문 스타일로, 없으면 자리 표시(노란 LLM 칸)로."""
+        t = texts.get(id(h))
+        return (f'<div class="sk-hlsent">{narrative.html(t)}</div>' if t
+                else f'<div class="sk-hlsent"><span class="sk-llm">{esc(placeholder)}</span></div>')
 
     def fn(cid, v):
         h = ctx.hl.get(cid)
@@ -71,13 +81,13 @@ def r_highlight(spec, ctx: Ctx):
                 f'<div class="sk-judge"><span>{esc(f.short)} <b>{f.fmt(x)}</b></span>'
                 f'{tag(j, {"유리": "good", "아쉬움": "bad"}.get(j, "mid"))}</div>' for f, x, j in h.judgments)
             return cell(f'<div class="sk-cap" style="margin-bottom:6px">서울 보통과 비교한 진단이에요</div>{rows}'
-                        f'<div class="sk-hlsent"><span class="sk-llm">{esc(C.S("llm_placeholder"))}</span></div>', hl=True)
+                        + sentence(h, C.S("llm_placeholder")), hl=True)
         who = "다른 두 곳보다" if h.n_others == 2 else "다른 곳보다"
         b = (f'<div class="sk-pill good">▲ 가장 유리 · {esc(h.best[0].short)} {h.best[0].fmt(h.best[1])}</div>' if h.best
              else f'<div class="sk-pill none">▲ {who} 뚜렷하게 앞서는 점 없음</div>')
         w = (f'<div class="sk-pill bad">▼ 가장 불리 · {esc(h.worst[0].short)} {h.worst[0].fmt(h.worst[1])}</div>' if h.worst
              else f'<div class="sk-pill none">▼ {who} 뚜렷하게 뒤처지는 점 없음</div>')
-        return cell(f'{b}<br>{w}<div class="sk-hlsent"><span class="sk-llm">{esc(llm_sentence(h))}</span></div>', hl=True)
+        return cell(f'{b}<br>{w}' + sentence(h, llm_sentence(h)), hl=True)
 
     single = any(h.mode == "single" for h in ctx.hl.values())
     sub = "서울 보통 대비<br>유리 · 보통 · 아쉬움" if single else spec.get("sub", "")

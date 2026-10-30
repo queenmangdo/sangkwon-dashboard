@@ -25,3 +25,10 @@ trend:
   recent_months: 3        # '최근 n개월'
   chart_months: 12        # 추이 그래프 기간
   yoy_min_months: 15      # 데이터가 이 개월 수 이상이면 '최근 n개월 vs 전년 동기'로 자동 전환 (v2 상권 지표는 43개월 → 전년 동기)
+
+# LLM 연결 (키는 OPENUB_API — .env 또는 Streamlit secrets). model 이 비어 있으면 자리 표시 문구를 그대로 보여줌
+llm:
+  model: gpt-5.6-luna   # API 에 쓰는 모델 ID
+  reasoning_effort: low # none·low·medium·high·xhigh·max (한 문장 생성은 low 로 충분). 지우면 모델 기본값(medium)
+  base_url: https://api.openai.com/v1
+  timeout: 20

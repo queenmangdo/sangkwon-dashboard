@@ -8,3 +8,7 @@ __pycache__/
 data/admdong_seoul.geojson
 data/roads_seoul.geojson
 data/roads_tiles/
+
+# API 키 (로컬 .env / Streamlit secrets) — 절대 커밋 금지
+.env
+.streamlit/secrets.toml

@@ -43,6 +43,7 @@ sangkwon_app/
 │  ├─ metrics.yaml         지표 계산 정의 (합계 / 매출 가중 평균 / 가게 수 가중 평균 / 상권 단위 값)
 │  ├─ items.yaml           상권 비교 표의 행 — 순서·라벨·부제·쓰는 지표·각주 (행 추가·삭제·문구는 여기)
 │  ├─ detail.yaml          상권 상세 페이지의 섹션·문구·고객층/시간대 목록
+│  ├─ llm_prompts.yaml     LLM 문장 지침 (공통 규칙 · 자리별 지침 · 상황별 힌트 · 예시 문장)
 │  └─ variables.csv        요인 사전 — 요인 이름, 짧은 이름, 정의, 관계 모양(shape), 임계·최적값, 해석 문구(높을 때/낮을 때)
 │
 ├─ core/                   계산 로직
@@ -50,7 +51,10 @@ sangkwon_app/
 │  ├─ loader.py            데이터 읽기 (역할 컬럼을 내부 이름 _cluster, _month, _major, _middle 로 바꿔 둠)
 │  ├─ engine.py            상권 × 업종 지표 계산, 서울 보통(중앙값), 대분류 가게 수
 │  ├─ factors.py           업종별 5가지 요인 카드 + 매출 요인 하이라이트 + LLM 입력(payload)
-│  ├─ trend.py             상권 상세 트렌드 (월별 추이, 최근 vs 기준 비교, 비중 변화) + LLM 입력
+│  ├─ trend.py             상권 상세 트렌드 (월별 추이, 최근 vs 기준 비교, 비중 변화)
+│  ├─ llm.py               LLM 호출 (OpenAI 호환, 실패하면 None → 자리 표시 문구)
+│  ├─ narrative.py         화면 자리별 LLM 입력·상황(state) 만들기
+│  ├─ secrets.py           API 키 읽기 (환경변수 > .env > st.secrets)
 │  ├─ geo.py               상권 위치·경계·검색, 좌표 → 상권 찾기
 │  ├─ state.py             고른 상권·업종 상태 ↔ URL
 │  └─ ui.py                공통 화면 조각 (라벨 칸, 값 칸, 막대, 요인 카드)
@@ -105,7 +109,7 @@ sangkwon_app/
 | 가게당 월매출 | 1년 매출 합 ÷ 1년 가게 수 합. 서울 보통 대비 ±% 함께 표시 |
 | 동종업계 가게 수·밀집도 | 대분류·중분류 둘 다. 밀집도 = 가게 수 ÷ (격자 수 × 0.0625㎢) |
 | 요인 카드 | 요인 표 순위 1~5. 관계 모양이 확인 안 되면(볼록형인데 최적값 없음, 방향이 '뚜렷하지 않음/불안정') "관계 확인 불가" |
-| 하이라이트 | 쓸 수 있는 요인만으로 `효과 = 방향 크기 × (상권 값 − 서울 보통) ÷ (서울 상권 p75 − p25)` → 다른 고른 상권 평균과의 차이가 +T 이상이면 가장 유리, −T 이하면 가장 불리 (T = 5). 1곳만 고르면 서울 보통 대비 유리/보통/아쉬움 |
+| 하이라이트 | 쓸 수 있는 요인만으로 `효과 = 방향 크기 × (상권 값 − 서울 보통) ÷ (서울 상권 p75 − p25)` → 다른 고른 상권 평균과의 차이가 +T 이상이면 가장 유리, −T 이하면 가장 불리 (T = 5). 한 요인은 그 요인에서 1등인 상권만 '유리', 꼴찌인 상권만 '불리'로 쓸 수 있어 상권끼리 겹치지 않아요. 1곳만 고르면 서울 보통 대비 유리/보통/아쉬움 |
 | 상세 트렌드 | 최근 3개월 vs 최근 1년. 데이터가 15개월 이상이면 **최근 3개월 vs 전년 동기로 자동 전환** |
 | 상권 이름 | 동 1개 · 대표 도로 (대로 > 로 > 길, 같은 급이면 경계 안 길이 순). 같은 구에서 겹치면 다음 도로로 구분 |
 
@@ -133,10 +137,21 @@ sangkwon_app/
 - [ ] **2년 데이터**: 넣으면 상세 페이지 비교가 자동으로 "전년 동기 대비"로 바뀌는지 확인 (`trend.yoy_min_months`). 추이 그래프에 전년 선을 겹쳐 그릴지도 결정.
 - [ ] **성능**: 원본 CSV(약 100MB)를 실행할 때마다 읽음. 실제 데이터가 커지면 parquet/DB 로 바꾸고 `core/loader.py → metrics_table()` 만 수정.
 
-### 6-2. LLM 연결 — 화면에 노란 `LLM` 표시가 붙은 자리
-- [ ] **매출 요인 하이라이트 한 문장**: `core/factors.py → llm_payload()`(입력, 명세의 JSON 형식) · `llm_sentence()`(지금은 자리 표시). 규칙: 한 문장 50~60자, "~한 사장님께 맞아요"로 끝, 수치 반복 금지, 핵심 키워드 1개 굵게, 인과·보장 표현 금지. few-shot 은 `variables.csv` 의 `high_text`/`low_text` 와 명세 예시 3개.
-- [ ] **상세 페이지 헤드라인·준비 방향 제목**: `core/trend.py → llm_payload()` (입력은 `st.session_state["_detail_llm_payload"]` 에 저장됨), 화면 자리는 `views/detail.py → llm()`.
-- [ ] 문장이 들어오면 `settings.yaml → llm_placeholder` 자리 표시는 지워도 됨.
+### 6-2. LLM 연결 — 연결됨 (문장 품질 다듬기만 남음)
+키는 `OPENUB_API` (로컬은 `.env`, Streamlit Cloud는 앱 Settings → Secrets). 모델·주소는 `settings.yaml → llm`. 키가 없거나 호출이 실패하면 노란 `LLM` 자리 표시가 그대로 나와요.
+
+| 자리 | 지침 키 (`llm_prompts.yaml`) | 상황(state) |
+|---|---|---|
+| 상권 비교 › 매출 요인 하이라이트 (2~3곳) | `highlight_compare` | both / best_only / worst_only (둘 다 없으면 호출 안 함) |
+| 상권 비교 › 매출 요인 하이라이트 (1곳 진단) | `highlight_single` | both / good_only / bad_only / all_mid |
+| 상세 › 01 성장 헤드라인 | `growth_headline` | normal / small_sample / partial |
+| 상세 › 04 준비 방향 · 언제 | `action_when` | changed / similar |
+| 상세 › 04 준비 방향 · 누가 | `action_who` | changed_sales_up / changed_sales_down / changed / similar |
+| 상세 › 04 준비 방향 · 경쟁 | `action_competition` | with_factor / no_factor |
+
+- 문구 톤·길이·예시는 `config/llm_prompts.yaml` 에서 고쳐요 (앱 재시작). 예시 문장은 초안이에요.
+- 입력(payload) 만드는 곳: 하이라이트 `core/factors.py`, 상세 `core/narrative.py`. 같은 입력은 앱이 켜져 있는 동안 캐시돼요.
+- [ ] 실제 결과를 보고 지침·예시 다듬기 (예: 굵게 표시하는 키워드가 어색한 경우).
 
 ### 6-3. 모델 결과 보완
 - [ ] **관계 곡선**: 요인 표에는 방향·방향 크기만 있어 하이라이트를 "방향 크기 × 사분위 간격" 직선 근사로 계산 중. SHAP 의존도 곡선(요인 값 → 예상 매출 %)을 받으면 `core/factors.py → Factor.score()` 를 곡선 값으로 교체.

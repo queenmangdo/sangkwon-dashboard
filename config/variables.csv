@@ -1,7 +1,7 @@
 ﻿var,metric,name,short_name,unit,definition,shape,threshold,optimum,binary_action,high_text,low_text
-corporate_pct,corporate_pct,회사카드 결제 비중,회사카드 결제,%,전체 매출 중 법인카드로 결제된 매출의 비율. 높은 곳은 회식·단체 결제가 많아 한 번에 결제하는 금액이 큰 편,increasing,,,,회식·단체 손님이 많고 한 번에 크게 결제,회사 손님보다 개인 손님 중심
-weekend_pct,weekend_pct,주말 매출 비중,주말 매출,%,전체 매출 중 주말에 발생한 매출의 비율,optimum,,,,주말 나들이·가족 손님,"평일 장사 중심, 주말은 쉬어 가도 됨"
-hour_1821_pct,hour_1821_pct,저녁(18~21시) 매출 비중,저녁 매출,%,하루 매출 중 저녁 18~21시에 발생한 매출의 비율,increasing,,,,저녁 손님·회식·홀 장사,점심 위주
+corporate_pct,corporate_pct,회사카드 결제 비중,회사카드 결제,%,전체 매출 중 법인카드로 결제된 매출의 비율. 높은 곳은 회식·단체 결제가 많아 한 번에 결제하는 금액이 큰 편,increasing,,,,회사카드 결제 손님이 많은 편,일반 손님 중심
+weekend_pct,weekend_pct,주말 매출 비중,주말 매출,%,전체 매출 중 주말에 발생한 매출의 비율,optimum,,,,주말 나들이 손님,"평일 장사 중심, 주말은 쉬어 가도 됨"
+hour_1821_pct,hour_1821_pct,저녁(18~21시) 매출 비중,저녁 매출,%,하루 매출 중 저녁 18~21시에 발생한 매출의 비율,increasing,,,,저녁 시간대 손님,점심 위주
 hour_1517_pct,hour_1517_pct,오후(15~17시) 매출 비중,오후 매출,%,하루 매출 중 오후 15~17시에 발생한 매출의 비율,optimum,,,,식사 시간 사이에도 손님이 이어짐,"오후는 한가함, 브레이크 타임 가능"
 has_delivery,delivery_store_pct,배달하는 가게 비율,배달하는 가게,%,상권 안 같은 업종 가게 중 배달을 하는 가게의 비율,binary,,,배달,배달 병행,매장 손님 위주
 is_franchise,franchise_store_pct,프랜차이즈 가게 비율,프랜차이즈 가게,%,상권 안 같은 업종 가게 중 프랜차이즈 가게의 비율,binary,,,프랜차이즈로 운영,브랜드 가게가 모인 상권,개인 가게 중심 상권

@@ -199,8 +199,17 @@ def highlights(factors: list[Factor], values: dict[int, dict], stores: dict[int,
             if e is None:
                 continue
             js.append((f, values[c].get(f.metric), "유리" if e >= T else "아쉬움" if e <= -T else "보통"))
-        res[c] = Highlight("single", judgments=js)
+        res[c] = Highlight("single", judgments=js, payload=_single_payload(industry, names.get(c, str(c)), js, base))
         return res
+
+    # 한 요인은 그 요인에서 1등인 상권만 '유리', 꼴찌인 상권만 '불리'로 쓸 수 있다 (상권끼리 같은 요인으로 겹치지 않게)
+    top: dict[str, int] = {}
+    bottom: dict[str, int] = {}
+    for f in use:
+        sc = [(eff[c][f.var], -i, c) for i, c in enumerate(valid) if eff[c][f.var] is not None]
+        if len(sc) >= 2:
+            top[f.var] = max(sc)[2]
+            bottom[f.var] = min(sc)[2]
 
     for c in valid:
         others = [o for o in valid if o != c]
@@ -211,8 +220,8 @@ def highlights(factors: list[Factor], values: dict[int, dict], stores: dict[int,
             if mine is None or not ref:
                 continue
             gaps.append((f, values[c].get(f.metric), mine - sum(ref) / len(ref)))
-        best = max(gaps, key=lambda x: (x[2], -x[0].rank), default=None)
-        worst = min(gaps, key=lambda x: (x[2], x[0].rank), default=None)
+        best = max((g for g in gaps if top.get(g[0].var) == c), key=lambda x: (x[2], -x[0].rank), default=None)
+        worst = min((g for g in gaps if bottom.get(g[0].var) == c), key=lambda x: (x[2], x[0].rank), default=None)
         best = best if best and best[2] >= T else None
         worst = worst if worst and worst[2] <= -T else None
         h = Highlight("compare", best=best, worst=worst, n_others=len(others))
@@ -221,18 +230,35 @@ def highlights(factors: list[Factor], values: dict[int, dict], stores: dict[int,
     return res
 
 
+def _part(f: Factor, v, higher: bool) -> dict:
+    return {"factor": f.name, "value": f.fmt(v), "direction": "higher_than_others" if higher else "lower_than_others",
+            "meaning": f.high_text if higher else f.low_text, "shape": f.shape}
+
+
 def llm_payload(industry, district, best, worst, mine, others, values) -> dict:
-    """명세의 LLM 입력 형식. API 연결 시 그대로 사용."""
+    """LLM 입력 (지침은 config/llm_prompts.yaml → highlight_compare)."""
     def part(t):
         if not t:
             return None
         f, v, _ = t
         ref = [values[o].get(f.metric) for o in others if values[o].get(f.metric) is not None]
-        higher = v is not None and ref and v > sum(ref) / len(ref)
-        return {"factor": f.name, "value": f.fmt(v), "direction": "higher_than_others" if higher else "lower_than_others",
-                "meaning": f.high_text if higher else f.low_text}
-    return {"industry": industry, "district": district, "best": part(best), "worst": part(worst),
-            "rules": "한 문장, 60자 이내, '~한 사장님께 맞아요'로 끝, 수치 반복 금지, 핵심 키워드 1개를 **굵게**, 인과·보장 표현 금지"}
+        return _part(f, v, bool(v is not None and ref and v > sum(ref) / len(ref)))
+    return {"industry": industry, "district": district, "best": part(best), "worst": part(worst)}
+
+
+def _single_payload(industry, district, judgments, base) -> dict | None:
+    """상권 1곳 진단용 LLM 입력: 유리 1개 + 아쉬움 1개 (요인 순위가 높은 것). 지침은 highlight_single."""
+    def pick(label):
+        for f, v, j in judgments:
+            if j == label and v is not None:
+                b = base.get(f.metric)
+                higher = b is not None and v > b
+                return {"factor": f.name, "value": f.fmt(v), "vs_seoul": "higher" if higher else "lower",
+                        "meaning": f.high_text if higher else f.low_text, "shape": f.shape}
+        return None
+    if not judgments:
+        return None
+    return {"industry": industry, "district": district, "good": pick("유리"), "bad": pick("아쉬움")}
 
 
 def llm_sentence(h: Highlight) -> str:

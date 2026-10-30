@@ -125,14 +125,3 @@ def segment_sales_change(cmp: dict, metric: str) -> float | None:
     ra = cmp["sales"][0] * a / 100
     rb = cmp["sales"][1] * b / 100
     return (ra / rb - 1) * 100 if rb else None
-
-
-def llm_payload(industry: str, district: str, p: Periods, cmp: dict, who, when, weekend, factor) -> dict:
-    """LLM 연결 시 입력 (상세 페이지 헤드라인 · 준비 방향 문장용)."""
-    return {
-        "industry": industry, "district": district,
-        "compare": f"{p.recent_label} vs {p.base_label}",
-        "growth": {k: None if pd.isna(v) else round(v, 1) for k, v in cmp["chg"].items()},
-        "who": who, "when": when, "weekend": weekend, "top_factor": factor,
-        "rules": "~이에요/~일 수 있어요로 끝, 인과·보장 표현 금지, 숫자는 근거로만",
-    }

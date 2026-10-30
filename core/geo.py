@@ -1,12 +1,11 @@
 """상권 위치: 경계·이름·검색·좌표 → 상권."""
 from __future__ import annotations
 
-import os
-
 import numpy as np
 import pandas as pd
 import streamlit as st
 
+from . import secrets
 from .loader import area_shapes, area_table
 
 
@@ -74,7 +73,7 @@ def search(q: str, allowed: set[int] | None = None, limit: int = 8) -> pd.DataFr
 
 
 def geocode(q: str) -> tuple[float, float] | None:
-    key = os.environ.get("KAKAO_REST_API_KEY")
+    key = secrets.get("KAKAO_REST_API_KEY")
     if not key:
         return None
     try:

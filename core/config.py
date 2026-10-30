@@ -42,6 +42,11 @@ def detail() -> dict:
 
 
 @lru_cache
+def llm_prompts() -> dict:
+    return _yaml("llm_prompts.yaml")
+
+
+@lru_cache
 def variables() -> pd.DataFrame:
     v = pd.read_csv(CONF / "variables.csv", encoding="utf-8-sig", dtype=str).fillna("")
     return v.set_index("var")
