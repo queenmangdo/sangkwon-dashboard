@@ -14,6 +14,15 @@
     area.csv              cluster, name, gu, dong, road, grid_count, area_km2, lat, lon, rent_per_m2, sns_hashtags
     area_shapes.geojson   상권 경계 (WGS84)
 
+대분류마다 다른 상권 경계 (settings.yaml → area_sets)
+    격자 모양은 --gpkg 그대로 쓰고, 상권 번호만 다른 클러스터링 결과(grid_id, cluster CSV)로 바꿔 만든다.
+    python prep/build_area.py --cluster-csv ../data_rent/cluster_retail_t9_202607.csv --suffix _retail \
+        --rent ../data_rent/cluster_rent_retail_2026q2.csv --copy-from data/area.csv
+    --suffix     출력 이름 뒤에 붙임 → data/area_retail.csv, data/area_shapes_retail.geojson
+    --rent       상권별 임대료 CSV (rent_1f, 천 원/㎡) → rent_per_m2 (원/㎡)
+    --copy-from  기존 경계의 area.csv. SNS 키워드 칸을 격자가 가장 많이 겹치는 기존 상권에서 가져옴
+                 (기존 상권 번호 = --gpkg 의 cluster 칸)
+
 이름 규칙
     1. 동 1개(상권이 가장 많이 걸친 행정동) · 대표 도로 1개   예) 안암동 · 고려대로
     2. 대표 도로 = 경계 안을 지나는 이름 있는 도로 중 대로 > 로 > 길 순, 같은 급이면 경계 안 길이가 긴 도로
@@ -34,6 +43,7 @@ import pandas as pd
 APP = Path(__file__).resolve().parents[1]
 DATA = APP / "data"
 FUTURE_COLS = ["rent_per_m2", "sns_hashtags"]
+COPY_COLS = ["sns_hashtags_main", "sns_hashtags_detail", "sns_hashtags", "sns_keyword_details"]   # 동네 단위 값 (--copy-from)
 ADM_URL = "https://raw.githubusercontent.com/vuski/admdongkor/master/ver20230701/HangJeongDong_ver20230701.geojson"
 OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter",
             "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]
@@ -182,9 +192,25 @@ def make_names(out: pd.DataFrame, cands: dict[int, list[tuple[str, float]]]) -> 
     return out
 
 
+def copy_from_base(g: gpd.GeoDataFrame, base: pd.DataFrame, cluster_col: str, path: Path) -> pd.DataFrame:
+    """기존 경계의 상권 단위 값(COPY_COLS)을 격자가 가장 많이 겹치는 기존 상권에서 가져옴. index = 새 상권 번호"""
+    pair = g[["grid_id", cluster_col]].merge(base, on="grid_id").dropna()
+    n = pair.groupby([cluster_col, "_base"]).size().rename("n").reset_index()
+    top = n.sort_values("n", ascending=False).drop_duplicates(cluster_col).set_index(cluster_col)["_base"].astype(int)
+    src = pd.read_csv(path, encoding="utf-8-sig").set_index("cluster")
+    cols = [c for c in COPY_COLS if c in src]
+    return src.reindex(top.to_numpy())[cols].set_axis(top.index)
+
+
 # ------------------------------------------------------------------ 메인
-def main(gpkg: Path, adm: Path | None, roads: Path | None, cluster_col: str = "cluster") -> None:
+def main(gpkg: Path, adm: Path | None, roads: Path | None, cluster_col: str = "cluster",
+         cluster_csv: Path | None = None, suffix: str = "", rent: Path | None = None, copy_from: Path | None = None) -> None:
     g = gpd.read_file(gpkg)
+    base = None
+    if cluster_csv is not None:     # 격자 모양은 gpkg 그대로, 상권 번호만 다른 클러스터링 결과로
+        base = g[["grid_id", cluster_col]].rename(columns={cluster_col: "_base"})
+        c = pd.read_csv(cluster_csv, encoding="utf-8-sig")[["grid_id", "cluster"]].rename(columns={"cluster": cluster_col})
+        g = g.drop(columns=[cluster_col]).merge(c, on="grid_id", how="left")
     g = g[g[cluster_col].notna()].copy()
     g[cluster_col] = g[cluster_col].astype(int)
     cell_km2 = g.geometry.iloc[0].area / 1e6
@@ -216,17 +242,30 @@ def main(gpkg: Path, adm: Path | None, roads: Path | None, cluster_col: str = "c
     out["name"] = out["name"].where(out["name"] != "", "상권 #" + out.index.astype(str))
     for c in FUTURE_COLS:
         out[c] = pd.NA
+    cols = ["cluster", "name", "gu", "dong", "road", "grid_count", "area_km2", "lat", "lon", *FUTURE_COLS]
+    if rent is not None:
+        r = pd.read_csv(rent, encoding="utf-8-sig").set_index("cluster")["rent_1f"]   # 천 원/㎡
+        out["rent_per_m2"] = (out.index.map(r).astype(float) * 1000).round(0)
+    if copy_from is not None and base is not None:
+        cp = copy_from_base(g, base, cluster_col, copy_from)
+        for c in cp.columns:
+            out[c] = cp[c].reindex(out.index)
+        cols += [c for c in cp.columns if c not in cols]
 
     DATA.mkdir(exist_ok=True)
-    cols = ["cluster", "name", "gu", "dong", "road", "grid_count", "area_km2", "lat", "lon", *FUTURE_COLS]
-    out.reset_index()[cols].to_csv(DATA / "area.csv", index=False, encoding="utf-8-sig")
+    f_csv, f_geo = f"area{suffix}.csv", f"area_shapes{suffix}.geojson"
+    out.reset_index()[cols].to_csv(DATA / f_csv, index=False, encoding="utf-8-sig")
     s = shapes.to_crs(4326).reset_index()
     s["geometry"] = s.geometry.simplify(0.00005)
-    s.to_file(DATA / "area_shapes.geojson", driver="GeoJSON", COORDINATE_PRECISION=6)
+    s.to_file(DATA / f_geo, driver="GeoJSON", COORDINATE_PRECISION=6)
 
     lab = out["gu"] + " " + out["name"]
-    print(f"상권 {len(out)}곳 저장 → data/area.csv, data/area_shapes.geojson")
+    print(f"상권 {len(out)}곳 저장 → data/{f_csv}, data/{f_geo}")
     print(f"  도로 이름 붙은 상권 {(out['road'] != '').sum()}곳 · 같은 이름 남은 상권 {lab.duplicated(keep=False).sum()}곳")
+    if rent is not None:
+        print(f"  임대료 있는 상권 {out['rent_per_m2'].notna().sum()}곳")
+    if "sns_hashtags" in cols:
+        print(f"  SNS 키워드 있는 상권 {out['sns_hashtags'].notna().sum()}곳")
 
 
 if __name__ == "__main__":
@@ -236,10 +275,14 @@ if __name__ == "__main__":
     ap.add_argument("--roads", type=Path, default=DATA / "roads_seoul.geojson")
     ap.add_argument("--no-roads", action="store_true")
     ap.add_argument("--cluster-col", default="cluster")
+    ap.add_argument("--cluster-csv", type=Path, help="상권 번호만 바꿀 클러스터링 결과 (grid_id, cluster)")
+    ap.add_argument("--suffix", default="", help="출력 이름 뒤에 붙임 (예: _retail)")
+    ap.add_argument("--rent", type=Path, help="상권별 임대료 CSV (cluster, rent_1f)")
+    ap.add_argument("--copy-from", type=Path, help="SNS 키워드를 가져올 기존 경계의 area.csv")
     a = ap.parse_args()
     if not a.gpkg.exists():
         sys.exit(f"격자 파일이 없어요: {a.gpkg}")
     DATA.mkdir(exist_ok=True)
     adm = fetch_adm(a.adm)
     roads = None if a.no_roads else fetch_roads(a.roads)
-    main(a.gpkg, adm, roads, a.cluster_col)
+    main(a.gpkg, adm, roads, a.cluster_col, a.cluster_csv, a.suffix, a.rent, a.copy_from)

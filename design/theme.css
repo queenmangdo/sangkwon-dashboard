@@ -44,6 +44,10 @@ header[data-testid="stHeader"] { background: transparent; }
 .sk-fcard .t { font-weight: 800; font-size: 14px; margin: 8px 0 6px; }
 .sk-fcard .k { color: var(--indigo-text); font-weight: 700; margin-top: 8px; font-size: 11px; }
 .sk-fcard .na { color: var(--muted); font-weight: 600; }
+/* 관계 문장 칸 — 숫자 없이 말로 쓴 매출과의 관계 */
+.sk-fcard .rel { background: var(--lavender-bg); border-left: 3px solid var(--indigo); border-radius: 4px; padding: 8px 10px;
+                 min-height: 72px; font-size: 12.5px; font-weight: 700; color: var(--indigo-text); line-height: 1.55; }
+.sk-fcard .rel.na { color: var(--muted); border-left-color: var(--bar-base); font-weight: 600; }
 /* 좋은 구간 띠 — 눈금 위에 매출이 가장 높은 구간 (0/1 변수는 안 함 / 함 두 칸) */
 .sk-band { position: relative; height: 46px; margin: 2px 0; }
 .sk-band .lab { position: absolute; top: 0; transform: translateX(-50%); font-size: 12px; font-weight: 800; color: var(--indigo); white-space: nowrap; }

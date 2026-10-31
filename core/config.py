@@ -52,8 +52,26 @@ def variables() -> pd.DataFrame:
     return v.set_index("var")
 
 
+@lru_cache
+def groups() -> pd.DataFrame:
+    g = pd.read_csv(CONF / "groups.csv", encoding="utf-8-sig", dtype=str).fillna("")
+    return g.set_index("group")
+
+
 def path(key: str) -> Path:
     return (APP / settings()["data"][key]).resolve()
+
+
+def area_set(major: str) -> str:
+    """대분류 → 상권 경계 이름. settings.area_sets 에 없으면 '' (기본 경계 = data.area_table)"""
+    return major if major in (settings().get("area_sets") or {}) else ""
+
+
+def area_path(key: str, major: str) -> Path:
+    """대분류의 상권 표·경계 파일 (key = area_table | area_shapes)"""
+    s = area_set(major)
+    rel = settings()["area_sets"][s][key] if s else settings()["data"][key]
+    return (APP / rel).resolve()
 
 
 def S(key: str, default=None):

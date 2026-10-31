@@ -64,27 +64,50 @@ def has_metric_columns(name: str) -> bool:
     return all(c in df for c in cols) and all(df[c].notna().any() for c in cols)
 
 
-@st.cache_data
-def factor_table() -> pd.DataFrame:
-    p = C.path("factor_table")
+def _role_table(key: str, nums: tuple[str, ...]) -> pd.DataFrame:
+    """columns.yaml 의 역할 이름으로 칸을 바꾼 표. 파일이 없으면 빈 표"""
+    p = C.path(key)
     if not p.exists():
         return pd.DataFrame()
     df = _read(p)
-    m = C.columns()["factor_table"]
     out = pd.DataFrame(index=df.index)
-    for k, c in m.items():
+    for k, c in C.columns()[key].items():
         out[k] = df[c] if c and c in df else pd.NA
     out["major"], out["middle"] = out["major"].astype(str), out["middle"].astype(str)
-    out["rank"] = pd.to_numeric(out["rank"], errors="coerce")
-    for k in ("share", "effect", "threshold", "optimum", "axis_lo", "axis_hi", "band_lo", "band_hi"):
+    for k in ("rank",) + nums:
         if k in out:
             out[k] = pd.to_numeric(out[k], errors="coerce")
     return out
 
 
 @st.cache_data
-def area_table() -> pd.DataFrame:
-    p = C.path("area_table")
+def factor_table() -> pd.DataFrame:
+    """요인 표 (변수 단위) — 하이라이트 점수에 쓰는 모양·방향 크기"""
+    return _role_table("factor_table", ("share", "effect", "threshold", "optimum", "axis_lo", "axis_hi", "band_lo", "band_hi"))
+
+
+@st.cache_data
+def group_table() -> pd.DataFrame:
+    """묶음 표 — 요인 카드 (순위 · 관계 문장 · 대표 변수)"""
+    return _role_table("group_table", ("share",))
+
+
+def _major(major: str | None) -> str:
+    return major or st.session_state.get("major") or C.S("default_major")
+
+
+def area_table(major: str | None = None) -> pd.DataFrame:
+    """상권 단위 표. 대분류마다 상권 경계가 다를 수 있음 (settings.area_sets). major 를 비우면 지금 고른 대분류"""
+    return _area_table(str(C.area_path("area_table", _major(major))))
+
+
+def area_shapes(major: str | None = None) -> dict | None:
+    return _area_shapes(str(C.area_path("area_shapes", _major(major))))
+
+
+@st.cache_data
+def _area_table(path: str) -> pd.DataFrame:
+    p = Path(path)
     if not p.exists():
         return pd.DataFrame()
     df = _read(p)
@@ -100,8 +123,8 @@ def area_table() -> pd.DataFrame:
 
 
 @st.cache_data
-def area_shapes() -> dict | None:
-    p = C.path("area_shapes")
+def _area_shapes(path: str) -> dict | None:
+    p = Path(path)
     if not p.exists():
         return None
     return json.loads(p.read_text(encoding="utf-8"))

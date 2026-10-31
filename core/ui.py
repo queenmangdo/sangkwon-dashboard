@@ -96,20 +96,20 @@ def band_html(f) -> str:
             f'<div class="ax"><span>{esc(f.fmt(a))}</span><span>{esc(f.fmt(z))}</span></div></div>')
 
 
-def factor_box(major: str, middle: str, factors, note: str) -> None:
+def factor_box(major: str, middle: str, groups, note: str) -> None:
+    """카드 한 장 = 변수 묶음 하나: 순위 · 이름 · 관계 문장 칸 · 어떤 값이에요 (그래프 없이 글로만)"""
     head = (f'<h3>선택하신 <span class="sk-chip">{esc(major)}</span><span class="sk-chip">{esc(middle)}</span>'
-            f' 업종은 아래 {len(factors) or 5}가지 항목을 눈여겨보는 게 좋아요!</h3>'
+            f' 업종은 아래 {len(groups) or 5}가지 항목을 눈여겨보는 게 좋아요!</h3>'
             f'<div class="sk-cap">서울 {esc(middle)} 가게들의 매출을 분석해, 매출과 관계가 큰 순서대로 골랐어요. '
-            f'업종을 바꾸면 {len(factors) or 5}가지 항목도 바뀌어요.</div>')
-    if not factors:
+            f'업종을 바꾸면 {len(groups) or 5}가지 항목도 바뀌어요.</div>')
+    if not groups:
         st.html(f'<div class="sk-fbox">{head}<div class="sk-empty-box">{esc(note)}</div></div>')
         return
     cards = []
-    for f in factors:
-        rel = f'<div>{esc(f.relation)}</div>' if f.confirmed else '<div class="na">관계 확인 불가</div>'
-        cards.append(f'<div class="sk-fcard"><span class="n">{f.rank}</span><div class="t">{esc(f.name)}</div>'
-                     f'{band_html(f)}<div class="k">어떤 값이에요</div><div>{esc(f.definition)}</div>'
-                     f'<div class="k">매출과의 관계</div>{rel}</div>')
+    for g in groups:
+        rel = f'<div class="rel">{esc(g.relation)}</div>' if g.relation else '<div class="rel na">관계 확인 불가</div>'
+        cards.append(f'<div class="sk-fcard"><span class="n">{g.rank}</span><div class="t">{esc(g.name)}</div>'
+                     f'{rel}<div class="k">어떤 값이에요</div><div>{esc(g.definition)}</div></div>')
     warn = f'<div class="sk-warn">{esc(note)}</div>' if note else ""
     st.html(f'<div class="sk-fbox">{head}<div class="sk-fgrid" style="grid-template-columns:repeat({len(cards)},1fr)">'
             f'{"".join(cards)}</div>{warn}<div class="sk-fnote">모델이 찾은 관계예요. 모델은 틀릴 수 있어요.</div></div>')

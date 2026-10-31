@@ -9,7 +9,7 @@ from core import config as C
 from core import llm as llm_api
 from core import narrative, state
 from core.engine import compute, fmt_ym, is_total
-from core.factors import factors_for
+from core.factors import groups_for
 from core.geo import info
 from core.loader import area_table
 from core.trend import biggest_share_change, compare, monthly, periods, segment_sales_change
@@ -212,8 +212,9 @@ else:
 # ------------------------------------------------------------------ 04 준비 방향
 A = D["actions"]
 sec(A["num"], A["title"], "sec-04", A.get("sub", ""))
-factors, _ = factors_for(major, middle)
-top_f = next((f for f in factors if f.usable), None)
+groups, _ = groups_for(major, middle)
+top_g = groups[0] if groups else None
+top_f = top_g.rep if top_g else None    # 1순위 묶음의 대표 변수 — 이 상권 값 비교에 씀
 
 evid: dict[str, tuple[list[str], list[str]]] = {}
 if not when_top and (bn := largest_now(N["bands"])):
@@ -242,11 +243,12 @@ if who_top:
     evid["who"] = (lines, chips)
 lines = [f"점포 수는 {P.base_label} 대비 {pct(chg['stores'])}, 점포당 평균 매출은 {pct(chg['sps'])}예요."]
 chips = [f"점포 수 {pct(chg['stores'])}", f"점포당 매출 {pct(chg['sps'])}"]
-if top_f:
-    fa, fb = cmp["recent"].get(top_f.metric), cmp["base"].get(top_f.metric)
+if top_g:
+    lines.append(f"{industry} 주요 매출요인 1순위는 '{top_g.name}' 항목이에요." + (f" {top_g.relation}." if top_g.relation else ""))
+    fa, fb = (cmp["recent"].get(top_f.metric), cmp["base"].get(top_f.metric)) if top_f else (None, None)
     if isnum(fa) and isnum(fb):
-        lines.append(f"{industry} 주요 매출요인 1순위는 {top_f.name}이고, 이 상권은 {fb:.0f}% → {fa:.0f}%예요.")
-    chips.append(f"주요 요인 · {top_f.short}")
+        lines.append(f"이 상권의 {top_f.short}: {top_f.fmt(fb)} → {top_f.fmt(fa)}")
+    chips.append(f"주요 요인 · {top_g.name}")
 evid["competition"] = (lines, chips)
 
 cmp_label = f"{P.recent_label} vs {P.base_label}"

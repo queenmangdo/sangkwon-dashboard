@@ -1,9 +1,20 @@
 # 앱 전역 설정 — 경로는 sangkwon_app 폴더 기준
 data:
-  metrics_table: data/metrics_v2_restaurant.parquet        # 상권 지표 (상권 × 월 × 중분류, 2023-01~) — seoul_sales dashboard_data_v2.ipynb
-  factor_table: data/factor_v2h_restaurant.csv             # 업종별 요인 결과 — seoul_sales 모델 노트북 4절 (중분류별 LightGBM + SHAP)
-  area_table: data/area.csv                                 # 상권 단위 표 (prep/build_area.py)
+  metrics_table: data/metrics_v2_food.parquet        # 상권 지표 (상권 × 월 × 중분류, 2023-01~). 대분류마다 parquet 1개씩 든 폴더 — seoul_sales 모델 노트북 5절
+  factor_table: data/factor_v2h_food.csv             # 업종별 요인 결과 (변수 단위) — seoul_sales 모델 노트북 4절 (중분류별 LightGBM + SHAP)
+  group_table: data/group_v2h_food.csv               # 업종별 요인 묶음 (요인 카드) — seoul_sales 모델 노트북 4-6
+  area_table: data/area.csv                                 # 상권 단위 표 (prep/build_area.py) — 음식점 기준 상권 경계
   area_shapes: data/area_shapes.geojson                     # 상권 경계
+
+# 대분류별 상권 경계. 여기 없는 대분류(음식점·카페·주점)는 위 data.area_table / area_shapes 를 씀.
+# 경계가 다른 대분류로 바꾸면 고른 상권을 비움 (같은 번호라도 다른 상권이라서)
+area_sets:
+  소매:
+    area_table: data/area_retail.csv                        # prep/build_area.py --cluster-csv ../data_rent/cluster_retail_t9_202607.csv --suffix _retail
+    area_shapes: data/area_shapes_retail.geojson
+  서비스:
+    area_table: data/area_service.csv                       # prep/build_area.py --cluster-csv ../data_rent/cluster_service_t9_202607.csv --suffix _service
+    area_shapes: data/area_shapes_service.geojson
 
 period_months: 12          # 비교 기간: 데이터 마지막 달부터 거꾸로 n개월
 baseline_min_stores: 3     # '서울 보통'에 넣을 상권: 같은 업종 가게가 최근 달 n곳 이상

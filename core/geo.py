@@ -14,9 +14,14 @@ def info(cid: int) -> dict:
     return a.loc[cid].to_dict() if (not a.empty and cid in a.index) else {"_label": f"상권 #{cid}", "_name": f"상권 #{cid}", "_gu": ""}
 
 
-@st.cache_data
 def shape_index() -> dict[int, dict]:
-    gj = area_shapes() or {"features": []}
+    """지금 고른 대분류의 상권 경계 (대분류마다 경계가 다를 수 있음)"""
+    return _shape_index(st.session_state.get("major", ""))
+
+
+@st.cache_data
+def _shape_index(major: str) -> dict[int, dict]:
+    gj = area_shapes(major or None) or {"features": []}
     return {int(f["properties"]["cluster"]): f for f in gj["features"]}
 
 

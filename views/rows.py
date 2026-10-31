@@ -46,11 +46,16 @@ def _best(ctx: Ctx, metric: str):
 
 def _wip(spec: dict, ctx: "Ctx") -> None:
     """지표 컬럼이 데이터에 없을 때: 라벨에 '데이터 확보 시', 칸은 빈 칸."""
-    row(label(_lab(spec, ctx), spec.get("sub", ""), wip=True), [empty("데이터 확보 시 채워져요") for _ in ctx.slots])
+    row(label(_lab(spec, ctx), _sub(spec, ctx), wip=True), [empty("데이터 확보 시 채워져요") for _ in ctx.slots])
 
 
 def _lab(spec, ctx):
     return spec["label"].replace("{업종}", ctx.industry)
+
+
+def _sub(spec, ctx):
+    """부제의 {상권 대분류} → 상권 단위 값(생존율 등)을 만든 대분류. 상권 경계를 따로 쓰는 대분류는 그 이름, 나머지는 음식점"""
+    return spec.get("sub", "").replace("{상권 대분류}", C.area_set(ctx.major) or C.S("default_major"))
 
 
 # ------------------------------------------------------------------ type 별
@@ -183,7 +188,7 @@ def r_pct_judge(spec, ctx: Ctx):
         if isnum(b):
             t = tag("유리", "good") if x - b >= g else tag("아쉬움", "bad") if x - b <= -g else tag("보통", "mid")
         return cell(f'<div class="sk-big">{x:.0f}<small>%</small>{t}</div><div class="sk-sub">서울 보통 <b>{num(b, d=0)}%</b></div>')
-    row(label(_lab(spec, ctx), spec.get("sub", "")), _cells(ctx, fn))
+    row(label(_lab(spec, ctx), _sub(spec, ctx)), _cells(ctx, fn))
 
 
 def r_hours(spec, ctx: Ctx):
