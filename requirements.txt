@@ -1,10 +1,11 @@
-streamlit>=1.42
-streamlit-folium>=0.22
-folium>=0.17
-pandas>=2.0
-numpy
-pyyaml
-openpyxl
-pyarrow          # 상권 지표 parquet 읽기
-requests
+# 버전 고정 (2026-10-31, 로컬에서 띄워 본 버전). 올릴 때는 로컬에서 먼저 띄워 보고 같이 바꿈
+streamlit==1.66.1        # 코드에 지원 종료 예고된 use_container_width 가 남아 있어 더 새 버전은 깨질 수 있음
+streamlit-folium==0.27.4
+folium==0.20.0
+pandas==3.1.0
+numpy                    # 고정 안 함: 최신(2.5)은 Python 3.12 이상만 돼서, 배포 Python 에 맞는 걸 고르게 둠
+pyyaml==6.0.3
+openpyxl==3.1.5
+pyarrow==26.0.0          # 상권 지표 parquet 읽기
+requests==2.34.2
 # prep/build_area.py 를 다시 돌릴 때만: geopandas
