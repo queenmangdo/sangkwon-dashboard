@@ -18,6 +18,16 @@ factor_table:
   band_lo: 좋은 구간 시작          # 곡선 꼭대기에서 양옆으로, 꼭대기의 절반 아래로 떨어지기 전까지
   band_hi: 좋은 구간 끝
 
+group_table:                      # 요인 카드 = 변수 묶음 (시간대·성별연령·요일·법인·배달·프랜차이즈·주변 가게·도로 …)
+  major: 대분류
+  middle: 중분류
+  group: 묶음                     # config/groups.csv 의 group
+  rank: 순위
+  share: 중요도 몫 (%)
+  relation: 관계 문장              # 숫자 없이 말로 쓴 관계 ("점심보다 저녁 장사 비중이 큰 가게일수록 …")
+  rep_var: 대표 변수               # 하이라이트·상세 화면에서 상권 값을 보여 줄 변수 (요인 표의 var)
+  reliability: 신뢰도
+
 metrics_table:
   cluster: cluster
   month: year_month

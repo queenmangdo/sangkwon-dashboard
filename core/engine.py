@@ -57,7 +57,7 @@ def compute(major: str, middle: str) -> pd.DataFrame:
     last = rows[rows["_month"] == latest()]
     g = win.groupby("_cluster")
     out = pd.DataFrame(index=sorted(rows["_cluster"].unique()))
-    area = area_table()
+    area = area_table(major)
     for name, spec in C.metrics().items():
         if not available(name):
             continue

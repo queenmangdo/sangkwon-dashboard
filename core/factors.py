@@ -1,4 +1,4 @@
-"""업종별 5가지 요인 카드 + 매출 요인 하이라이트 (docs/SPEC.md 2·3절)."""
+"""업종별 5가지 요인 카드(변수 묶음) + 매출 요인 하이라이트 (docs/SPEC.md 2·3절)."""
 from __future__ import annotations
 
 import math
@@ -8,7 +8,7 @@ import pandas as pd
 
 from . import config as C
 from .engine import available
-from .loader import factor_table
+from .loader import factor_table, group_table
 
 UNCLEAR = ("뚜렷하지", "불안정")
 
@@ -113,6 +113,17 @@ class Factor:
         return self.effect * (v - base) / iqr
 
 
+@dataclass
+class Group:
+    """요인 카드 한 장 = 변수 묶음 하나"""
+    key: str
+    rank: int
+    name: str
+    definition: str
+    relation: str          # 숫자 없이 말로 쓴 관계 문장
+    rep: Factor | None     # 대표 변수 (요인 표에 없으면 None) — 하이라이트·상세 화면에 씀
+
+
 def _shape(row, vrow) -> str:
     d = str(row.get("direction") or "")
     if any(u in d for u in UNCLEAR):
@@ -142,24 +153,57 @@ def factors_for(major: str, middle: str, n: int = 5) -> tuple[list[Factor], str]
         else:
             note = "이 업종은 분석에 쓴 가게 수가 적어 결과를 조심해서 봐야 해요."
     rows = rows.sort_values("rank").head(n)
+    return [_factor(r, int(r["rank"])) for _, r in rows.iterrows()], note
+
+
+def _factor(r, rank: int) -> Factor:
+    """요인 표 한 행 → Factor. 이름·단위는 variables.csv"""
     V = C.variables()
+    var = str(r["var"])
+    v = V.loc[var].to_dict() if var in V.index else None
+    get = (lambda k, d="": (v.get(k) or d) if v else d)
+    return Factor(
+        var=var, metric=get("metric", var), rank=rank,
+        name=get("name", str(r["name"])), short=get("short_name", str(r["name"])), unit=get("unit", "%"),
+        definition=(str(r["definition"]) if pd.notna(r["definition"]) else get("definition", "")),
+        shape=_shape(r, v),
+        threshold=_num(r["threshold"]) if _num(r["threshold"]) is not None else _num(get("threshold")),
+        optimum=_num(r["optimum"]) if _num(r["optimum"]) is not None else _num(get("optimum")),
+        effect=_num(r["effect"]), share=_num(r["share"]), reliability=str(r["reliability"]),
+        binary_action=get("binary_action"), high_text=get("high_text"), low_text=get("low_text"),
+        axis_lo=_num(r.get("axis_lo")), axis_hi=_num(r.get("axis_hi")),
+        band_lo=_num(r.get("band_lo")), band_hi=_num(r.get("band_hi")),
+    )
+
+
+def groups_for(major: str, middle: str, n: int = 5) -> tuple[list[Group], str]:
+    """(묶음 카드 목록, 안내 문구). 안내: '' | 대분류 기준 | 신뢰도 경고 | 데이터 없음."""
+    t = group_table()
+    if t.empty:
+        return [], "요인 결과 파일이 없어요."
+    total = C.S("total_label", "전체")
+    rows = t[(t["major"] == major) & (t["middle"] == middle)]
+    note = ""
+    if rows.empty:
+        return [], "이 업종의 요인 결과가 아직 없어요."
+    if str(rows["reliability"].iloc[0]).startswith("낮") and middle != total:
+        up = t[(t["major"] == major) & (t["middle"] == total)]
+        if len(up):
+            rows, note = up, "대분류 기준이에요"
+        else:
+            note = "이 업종은 분석에 쓴 가게 수가 적어 결과를 조심해서 봐야 해요."
+    ft = factor_table()
+    used = rows["middle"].iloc[0]
+    fv = ft[(ft["major"] == major) & (ft["middle"] == used)].set_index("var") if not ft.empty else pd.DataFrame()
+    G = C.groups()
     out = []
-    for _, r in rows.iterrows():
-        var = str(r["var"])
-        v = V.loc[var].to_dict() if var in V.index else None
-        get = (lambda k, d="": (v.get(k) or d) if v else d)
-        out.append(Factor(
-            var=var, metric=get("metric", var), rank=int(r["rank"]),
-            name=get("name", str(r["name"])), short=get("short_name", str(r["name"])), unit=get("unit", "%"),
-            definition=(str(r["definition"]) if pd.notna(r["definition"]) else get("definition", "")),
-            shape=_shape(r, v),
-            threshold=_num(r["threshold"]) if _num(r["threshold"]) is not None else _num(get("threshold")),
-            optimum=_num(r["optimum"]) if _num(r["optimum"]) is not None else _num(get("optimum")),
-            effect=_num(r["effect"]), share=_num(r["share"]), reliability=str(r["reliability"]),
-            binary_action=get("binary_action"), high_text=get("high_text"), low_text=get("low_text"),
-            axis_lo=_num(r.get("axis_lo")), axis_hi=_num(r.get("axis_hi")),
-            band_lo=_num(r.get("band_lo")), band_hi=_num(r.get("band_hi")),
-        ))
+    for _, r in rows.sort_values("rank").head(n).iterrows():
+        key, rank = str(r["group"]), int(r["rank"])
+        g = G.loc[key].to_dict() if key in G.index else {}
+        rep = str(r["rep_var"]) if pd.notna(r["rep_var"]) else ""
+        out.append(Group(key=key, rank=rank, name=g.get("name") or key, definition=g.get("definition", ""),
+                         relation=str(r["relation"]) if pd.notna(r["relation"]) else "",
+                         rep=_factor(fv.loc[rep].to_dict() | {"var": rep}, rank) if rep in fv.index else None))
     return out, note
 
 

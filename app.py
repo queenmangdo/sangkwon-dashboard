@@ -35,6 +35,8 @@ new_major = s1.selectbox("대분류", majors, index=majors.index(ss.major), labe
 l2.html('<div class="sk-inline-label">중분류</div>')
 new_mid = s2.selectbox("중분류", mids, index=mids.index(ss.middle), label_visibility="collapsed")
 if new_major != ss.major:
+    if C.area_set(new_major) != C.area_set(ss.major):   # 상권 경계가 다른 대분류 → 고른 상권 비움
+        state.clear_all()
     ss.major, ss.middle = new_major, total
     st.rerun()
 if new_mid != ss.middle:

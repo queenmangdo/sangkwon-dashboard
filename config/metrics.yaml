@@ -32,6 +32,7 @@ franchise_store_pct: {agg: wavg, col: franchise_store_pct, weight: stores, unit:
 near_food_n:         {agg: wavg, col: near_food_n, weight: stores, unit: 곳}
 near_franchise_pct:  {agg: wavg, col: near_franchise_pct, weight: stores, unit: "%"}
 near_grp_pct:        {agg: wavg, col: near_grp_pct, weight: stores, unit: "%"}
+near_bg_n:           {agg: wavg, col: near_bg_n, weight: stores, unit: 곳}       # 소매·서비스 (음식 3종은 near_food_n)
 near_sl_n:           {agg: wavg, col: near_sl_n, weight: stores, unit: 곳}
 near_mi_n:           {agg: wavg, col: near_mi_n, weight: stores, unit: 곳}
 near_sl_top1_pct:    {agg: wavg, col: near_sl_top1_pct, weight: stores, unit: "%"}

@@ -5,6 +5,7 @@ import folium
 import streamlit as st
 from streamlit_folium import st_folium
 
+from core import config as C
 from core import state
 from core.engine import compute
 from core.geo import info, locate, search, shape
@@ -18,19 +19,21 @@ GRAY_TILES = ("<style>.leaflet-tile-pane{filter:grayscale(1) brightness(1.06) co
               ".leaflet-interactive:focus{outline:none;}</style>")
 
 
-def selectable() -> set[int]:
-    return set(metrics_table()["_cluster"].unique())
+def selectable(major: str | None = None) -> set[int]:
+    """고를 수 있는 상권 = 그 대분류 지표가 있는 상권 (대분류마다 상권 경계·번호가 다를 수 있음)"""
+    df = metrics_table()
+    return set(df.loc[df["_major"] == (major or st.session_state.major), "_cluster"].unique())
 
 
 @st.cache_data
 def _shapes_for(major: str, middle: str) -> dict | None:
-    gj = area_shapes()
+    gj = area_shapes(major)
     if not gj:
         return None
     m = compute(major, middle)
     n = m["stores_latest"].to_dict() if not m.empty else {}
-    ok = selectable()
-    a = area_table()
+    ok = selectable(major)
+    a = area_table(major)
     feats = []
     for f in gj["features"]:
         cid = int(f["properties"]["cluster"])
@@ -96,7 +99,7 @@ def picker(slot: int) -> None:
         if cand is not None and (sf := shape(cand)):
             folium.GeoJson(sf, style_function=lambda f: dict(color=ORANGE, weight=3, fillColor=ORANGE, fillOpacity=.25),
                            interactive=False).add_to(fmap)
-    out = st_folium(fmap, height=440, use_container_width=True, key=f"pk_map_{slot}",
+    out = st_folium(fmap, height=440, use_container_width=True, key=f"pk_map_{slot}_{C.area_set(ss.major)}",
                     returned_objects=["last_clicked", "last_active_drawing"]) or {}
     sc, ck = out.get("last_active_drawing"), out.get("last_clicked")
     new = None

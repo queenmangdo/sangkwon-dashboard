@@ -51,5 +51,15 @@ def clear_slot(i: int) -> None:
     sync_url()
 
 
+def clear_all() -> None:
+    """고른 상권을 모두 비움 — 상권 경계가 다른 대분류로 바꿀 때 (같은 번호라도 다른 상권)"""
+    ss = st.session_state
+    ss.slots = [None] * len(ss.slots)
+    ss.detail = None
+    for k in ("pk_slot", "pk_cand", "pk_click", "pk_shape", "pk_radio", "pk_q"):
+        ss.pop(k, None)
+    sync_url()
+
+
 def letter(i: int) -> str:
     return "ABCDEFGH"[i]

@@ -6,7 +6,7 @@ import streamlit as st
 from core import config as C
 from core import state
 from core.engine import baseline, compute, fmt_ym, is_total, latest, major_counts, values_for, window
-from core.factors import factors_for, highlights
+from core.factors import groups_for, highlights
 from core.geo import info
 from core.ui import esc, factor_box, label, section
 from views.picker import mini_map, picker
@@ -25,8 +25,9 @@ m = compute(major, middle)
 
 # ------------------------------------------------------------------ 제목 + 요인 카드
 st.html(f'<div class="sk-h2">고른 상권 — {esc(industry)}</div>')
-factors, note = factors_for(major, middle)
-factor_box(major, middle, factors, note)
+groups, note = groups_for(major, middle)
+factor_box(major, middle, groups, note)
+factors = [g.rep for g in groups if g.rep]    # 하이라이트는 카드 5개 묶음의 대표 변수로 비교
 if m.empty:
     st.info(f"'{industry}' 업종의 상권 데이터가 아직 없어요. 데이터에 해당 행이 추가되면 채워져요.")
 
